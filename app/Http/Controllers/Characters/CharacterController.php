@@ -636,4 +636,59 @@ class CharacterController extends Controller {
 
         return redirect()->back();
     }
+
+    /**
+     * Shows a character's tracker.
+     *
+     * @param string $slug
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getCharacterTracker($slug)
+    {
+        $trackers = ArtTracker::where('character_id', $this->character->id)
+            ->latest()
+            ->get();
+
+        return view('character.tracker', [
+            'user'      => Auth::user() ?? null,
+            'character' => $this->character,
+            'trackers'  => $trackers,
+
+        ]);
+    }
+
+     /**
+     * Shows a character's tracker entries.
+     *
+     * @param string $slug
+     * @param mixed  $id
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getCharacterArt($slug, $id)
+        {
+           
+            $tracker = ArtTracker::where('character_id', $this->character->id)
+                ->where('id', $id)
+                ->firstOrFail();
+
+            return view('character.tracker', [
+                'user'      => Auth::user(),
+                'character' => $this->character,
+                'tracker'   => $tracker,
+                'ajax'      => true,
+            ]);
+        }
+
+    public function getCharacterTrackerEntry($slug, $id){
+        $submission = ArtTracker::where('id', $id)->firstOrFail();
+
+        return view('character._tracker_entry', [
+            'submission'      => $submission,
+            'user'            => Auth::user() ?? null,
+            'character'       => Character::visible(Auth::user() ?? null)->myo(0)->where('id', $submission->character_id)->first(),
+            'ajax'            => true,
+        ]);
+    }
 }

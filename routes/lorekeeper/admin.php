@@ -492,3 +492,11 @@ Route::get('{type}/{status}', 'DesignController@getDesignIndex')->where('type', 
 Route::group(['prefix' => 'limits', 'middleware' => 'power:manage_data'], function () {
     Route::post('/', 'LimitController@postCreateEditLimits');
 });
+
+// ART TRACKER
+Route::group(['prefix' => 'dp-submissions', 'middleware' => 'power:manage_submissions'], function () {
+    Route::get('/', 'ArtTrackerController@getTrackerQueue');
+    Route::get('/{status}', 'ArtTrackerController@getTrackerQueue')->where('status', 'pending|approved|rejected');
+    Route::get('edit/{id}', 'ArtTrackerController@getTrackerSubmission');
+    Route::post('edit/{id}/{action}', 'ArtTrackerController@postTrackerSubmission')->where('action', 'approve|reject|cancel');
+});

@@ -590,4 +590,47 @@ class Character extends Model {
             }
         }
     }
+
+    public function updateRank()
+    {
+        // Ranks and points needed to reach them
+        $ranks = [
+            10000 => 'Arisen X',
+            9000 => 'Arisen IX',
+            8000 => 'Arisen VIII',
+            7000 => 'Arisen VII',
+            6000 => 'Arisen VI',
+            5000 => 'Arisen V',
+            4000 => 'Arisen IV',
+            3000 => 'Arisen III',
+            2000 => 'Arisen II',
+            1000 => 'Arisen',
+            750 => 'Blessed',
+            500 => 'Alpha',
+            400 => 'Beta',
+            300 => 'Gamma',
+            200 => 'Delta',
+            150 => 'Zeta',
+            100  => 'Known',
+            0   => 'None',
+        ];
+
+        foreach ($ranks as $threshold => $rankName) {
+            if ($this->total_fp >= $threshold) {
+                
+                if ($this->rank !== $rankName) {
+                    $this->rank = $rankName;
+                    $this->save();
+
+                    Notifications::create('RANKUP', $this->user, [
+                        'character_url'  => $this->url,
+                        'character_name' => $this->fullName,
+                        'rank'           => $this->rank,
+                    ]);
+                }
+                
+                break;
+            }
+        }
+    }
 }

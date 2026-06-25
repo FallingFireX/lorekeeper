@@ -52,4 +52,65 @@ class GrantController extends Controller {
 
         return redirect()->back();
     }
+
+    /**
+     * Grants or removes EXP from a character.
+     *
+     * @param string                       $slug
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postCharacterDP($slug, Request $request) {
+        $validated = $request->validate([
+            'quantity' => 'required|integer',
+        ]);
+
+        $character = Character::where('slug', $slug)->first();
+
+        if (!$character) {
+            flash('Character not found.')->error();
+            return redirect()->back();
+        }
+
+        $quantity = $request->integer('quantity');
+
+       
+        DB::transaction(function () use ($character, $request, $quantity) {
+            $character->increment('total_fp', $quantity);
+
+            $character->refresh();
+            $character->updateRank();
+
+            FpLog::create([
+                'character_id' => $character->id,
+                'admin_id'     => Auth::id(),
+                'amount'       => $quantity,
+                'reason'       => $request->input('data'), 
+                'source'       => 'Admin Grant',           
+            ]);
+
+            ArtTracker::create([
+                'character_id' => $character->id,
+                'status'       => 'Approved',
+                'staff_id'        => Auth::id(),
+                'data' => [
+                    'art_type' => 'Admin Grant',
+                    'total'    => $quantity,
+                ],
+            ]);
+
+            $staff = Auth::user(); 
+            Notifications::create('FP_GRANT', $character->user, [
+                'staff_url'         => $staff->url,
+                'staff_name'        => $staff->name,
+                'character_url'     => $character->url,
+                'character_name'    => $character->fullName,
+                'quantity'          => $quantity,
+            ]);
+                    
+        });
+
+        flash('FP Granted and logged successfully!')->success();
+        return redirect()->back();
+    }
 }

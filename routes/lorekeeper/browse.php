@@ -86,6 +86,9 @@ Route::group(['prefix' => 'character', 'namespace' => 'Characters'], function ()
     Route::get('{slug}/ownership', 'CharacterController@getCharacterOwnershipLogs');
     Route::get('{slug}/change-log', 'CharacterController@getCharacterLogs');
     Route::get('{slug}/submissions', 'CharacterController@getCharacterSubmissions');
+    
+    Route::get('{slug}/tracker', 'CharacterController@getCharacterTracker');
+    Route::get('{slug}/tracker/{id}', 'CharacterController@getCharacterTrackerEntry');
 
     Route::get('{slug}/gallery', 'CharacterController@getCharacterGallery');
 });
@@ -180,4 +183,12 @@ Route::group(['prefix' => 'gallery'], function () {
 **************************************************************************************************/
 Route::group(['prefix' => 'reports', 'namespace' => 'Users'], function () {
     Route::get('/bug-reports', 'ReportController@getBugIndex');
+});
+
+Route::group(['prefix' => 'fp'], function () {
+    Route::get('/calculator', 'calculatorController@getCalc');
+    Route::post('/art-submission', 'calculatorController@store');
+    Route::put('/art-submission/{id}', 'calculatorController@update');
+    Route::get('/art-submission/{id}/edit', 'calculatorController@edit');
+
 });
