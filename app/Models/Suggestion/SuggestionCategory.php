@@ -19,7 +19,7 @@ class SuggestionCategory extends Model {
      *
      * @var string
      */
-    protected $table = 'suggestion_categories';
+    protected $table = 'suggestions_categories';
 
     /**
      * Validation rules for creation.

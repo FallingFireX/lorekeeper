@@ -442,3 +442,24 @@ Route::group(['prefix' => 'designs', 'middleware' => 'power:manage_characters'],
     Route::post('vote/{id}/{action}', 'DesignController@postVote')->where('action', 'approve|reject');
 });
 Route::get('{type}/{status}', 'DesignController@getDesignIndex')->where('type', 'myo-approvals|design-approvals')->where('status', 'pending|approved|rejected');
+
+
+Route::group(['prefix' => 'suggestions', 'middleware' => 'power:manage_suggestions'], function () {
+    //labels
+    Route::get('labels', 'SuggestionController@getLabelIndex');
+    Route::get('labels/create', 'SuggestionController@getCreateLabel');
+    Route::get('labels/edit/{id}', 'SuggestionController@getEditLabel');
+    Route::get('labels/delete/{id}', 'SuggestionController@getDeleteLabel');
+    Route::post('labels/create', 'SuggestionController@postCreateEditLabel');
+    Route::post('labels/edit/{id?}', 'SuggestionController@postCreateEditLabel');
+    Route::post('labels/delete/{id}', 'SuggestionController@postDeleteLabel');
+
+    //categories
+    Route::get('categories', 'SuggestionController@getIndex');
+    Route::get('categories/create', 'SuggestionController@getCreateCategory');
+    Route::get('categories/edit/{id}', 'SuggestionController@getEditCategory');
+    Route::get('categories/delete/{id}', 'SuggestionController@getDeleteCategory');
+    Route::post('categories/create', 'SuggestionController@postCreateEditCategory');
+    Route::post('categories/edit/{id?}', 'SuggestionController@postCreateEditCategory');
+    Route::post('categories/delete/{id}', 'SuggestionController@postDeleteCategory');
+});

@@ -19,7 +19,7 @@ class SuggestionController extends Controller {
      */
     public function getLabelIndex() {
         return view('admin.suggestions.labels', [
-            'labels' => SuggestionLabel::orderBy('sort', 'DESC')->get(),
+            'labels' => SuggestionLabel::orderBy('id', 'DESC')->get(),
         ]);
     }
 
@@ -69,7 +69,7 @@ class SuggestionController extends Controller {
         } elseif (!$id && $label = $service->createLabel($data, Auth::user())) {
             flash('Label created successfully.')->success();
 
-            return redirect()->to('admin/data/suggestions/labels/edit/'.$label->id);
+            return redirect()->to('admin/suggestions/labels/edit/'.$label->id);
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
@@ -89,7 +89,7 @@ class SuggestionController extends Controller {
     public function getDeleteLabel($id) {
         $label = SuggestionLabel::find($id);
 
-        return view('admin.suggestions._delete_label', [
+        return view('admin.suggestions._delete_suggestion_label', [
             'label' => $label,
         ]);
     }
@@ -127,7 +127,7 @@ class SuggestionController extends Controller {
      */
     public function getIndex() {
         return view('admin.suggestions.index', [
-            'categories' => SuggestionCategory::orderBy('sort', 'DESC')->get(),
+            'categories' => SuggestionCategory::orderBy('id', 'DESC')->get(),
         ]);
     }
 
@@ -138,7 +138,7 @@ class SuggestionController extends Controller {
      */
     public function getCreateCategory() {
         return view('admin.suggestions.create_edit_category', [
-            'categories' => new SuggestionCategory,
+            'category' => new SuggestionCategory,
         ]);
     }
 
@@ -170,14 +170,14 @@ class SuggestionController extends Controller {
     public function postCreateEditCategory(Request $request, SuggestionService $service, $id = null) {
         $id ? $request->validate(SuggestionCategory::$updateRules) : $request->validate(SuggestionCategory::$createRules);
         $data = $request->only([
-            'name', 'color', 'description',
+            'name', 'is_visible', 'description',
         ]);
         if ($id && $service->updateCategory(SuggestionCategory::find($id), $data, Auth::user())) {
             flash('Category updated successfully.')->success();
-        } elseif (!$id && $label = $service->createCategory($data, Auth::user())) {
+        } elseif (!$id && $category = $service->createCategory($data, Auth::user())) {
             flash('Category created successfully.')->success();
 
-            return redirect()->to('admin/data/suggestions/categories/edit/'.$label->id);
+            return redirect()->to('admin/suggestions/categories/edit/'.$category->id);
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
@@ -197,7 +197,7 @@ class SuggestionController extends Controller {
     public function getDeleteCategory($id) {
         $category = SuggestionCategory::find($id);
 
-        return view('admin.suggestions._delete_category', [
+        return view('admin.suggestions._delete_suggestion_category', [
             'category' => $category,
         ]);
     }

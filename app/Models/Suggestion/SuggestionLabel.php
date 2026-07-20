@@ -19,7 +19,7 @@ class SuggestionLabel extends Model {
      *
      * @var string
      */
-    protected $table = 'suggestion_labels';
+    protected $table = 'suggestions_labels';
 
     /**
      * Validation rules for creation.

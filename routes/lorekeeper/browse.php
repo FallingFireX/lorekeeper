@@ -172,3 +172,7 @@ Route::group(['prefix' => 'gallery'], function () {
 Route::group(['prefix' => 'reports', 'namespace' => 'Users'], function () {
     Route::get('/bug-reports', 'ReportController@getBugIndex');
 });
+
+Route::group(['prefix' => 'suggestions', 'namespace' => 'Users'], function () {
+    Route::get('/', 'SuggestionController@getIndex');
+});

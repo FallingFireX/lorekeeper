@@ -24,6 +24,13 @@ class Suggestion extends Model {
     protected $table = 'suggestions';
 
     /**
+     * Whether the model contains timestamps to be saved and updated.
+     *
+     * @var string
+     */
+    public $timestamps = true;
+
+    /**
      * Validation rules for creation.
      *
      * @var array

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSuggestions extends Migration
+class CreateSuggestionsTables extends Migration
 {
     /**
      * Run the migrations.
@@ -32,7 +32,7 @@ class CreateSuggestions extends Migration
         Schema::create('suggestions_labels', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->varchar('color');
+            $table->string('color', 10)->nullable();
             $table->text('description');
             $table->timestamps();
         });
@@ -40,7 +40,7 @@ class CreateSuggestions extends Migration
         Schema::create('suggestions_tags', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('suggestion_id');
-            $table->varchar('label_id');
+            $table->integer('label_id');
             $table->timestamps();
         });
     }

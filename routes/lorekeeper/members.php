@@ -225,3 +225,12 @@ Route::group(['prefix' => 'comments', 'namespace' => 'Comments'], function () {
     Route::post('/{id}/like/{action}', 'CommentController@like')->name('comments.like');
     Route::get('/liked', 'CommentController@getLikedComments');
 });
+
+
+
+Route::group(['prefix' => 'suggestions'], function () {
+    Route::get('/', 'SuggestionController@getIndex');
+    Route::get('new', 'SuggestionController@getCreateSuggestion');
+    Route::post('new', 'SuggestionController@postCreateEditSuggestion');
+    Route::get('view/{id}', 'SuggestionController@getSuggestion');
+});

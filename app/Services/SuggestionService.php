@@ -14,9 +14,9 @@ class SuggestionService extends Service {
     | Suggestion Service
     |--------------------------------------------------------------------------
     |
-    | Handles the creation and editing of suggestion labels and categories.
+    | Handles the creation and editing of suggestions, labels and categories.
     |
-    | This largely exists for potential updates later
+    | Additionally, handles deletion and checking for valid deletion conditions
     |
     */
 
@@ -156,7 +156,7 @@ class SuggestionService extends Service {
     }
 
     /**
-     * Deletes a label.
+     * Deletes a category.
      *
      * @param \App\Models\suggestion $label
      *
@@ -166,7 +166,7 @@ class SuggestionService extends Service {
         DB::beginTransaction();
 
         try {
-            // Checks to see if a label exists on a suggestion and prevents it if so
+            // Checks to see if a category exists on a suggestion and prevents it if so
             if (Suggestion::where('category_id', $category->id)->exists()) {
                 throw new \Exception('This category has been assigned to at least one or more suggestions');
             }
@@ -211,4 +211,45 @@ class SuggestionService extends Service {
 
         return $data;
     }
+
+
+    public function createSuggestion($data, $user) {
+        DB::beginTransaction();
+
+        $categoryId = request('category_id'); 
+
+        // Find the category by that specific ID
+        $category = SuggestionCategory::find($categoryId);
+
+
+        try {
+            if (!isset($data['category_id'])) {
+                throw new \Exception('Please select a category.');
+            }
+
+            if (!$category) {
+                throw new \Exception('Category not found.');
+            }
+
+            // Step 3: Check visibility
+            if (!$category->is_visible) {
+                throw new \Exception('This Category is closed for suggestions');
+            }
+            
+            $suggestion = Suggestion::create([
+                'user_id'   => $user->id,
+                'category_id' => $category->id,
+                'title'     => $data['title'],
+                'text'      => $data['text'],
+                'data'      => null,
+            ]);
+
+            return $this->commitReturn($suggestion);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+
+        return $this->rollbackReturn(false);
+    }
+
 }

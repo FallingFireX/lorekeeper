@@ -67,4 +67,8 @@ return [
         'name'        => 'Comment on Sales',
         'description' => 'Allow rank to comment on sales in preview mode.',
     ],
+    'manage_suggestions'  => [
+        'name'        => 'Manage Suggestions',
+        'description' => 'Allow rank to manage suggestions, including creating/editing labels, categories, and attaching labels to suggestions.',
+    ],
 ];
