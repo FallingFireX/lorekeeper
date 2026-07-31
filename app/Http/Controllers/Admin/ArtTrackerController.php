@@ -61,7 +61,7 @@ class ArtTrackerController extends Controller {
                 case 'approve':
                     //Update character points
                     $submission->update(['status' => 'Approved','staff_comments' => $request->get('staff_comments'),'staff_id' => Auth::user()->id,]);
-                    $points = $submission->data['total'] ?? 0;
+                    $points = $submission->total ?? 0;
                     $submission->characters()->increment('total_fp', $points);
 
                     //Check character rank and update it if needed

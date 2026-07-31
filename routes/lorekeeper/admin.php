@@ -494,7 +494,7 @@ Route::group(['prefix' => 'limits', 'middleware' => 'power:manage_data'], functi
 });
 
 // ART TRACKER
-Route::group(['prefix' => 'dp-submissions', 'middleware' => 'power:manage_submissions'], function () {
+Route::group(['prefix' => 'fp-submissions', 'middleware' => 'power:manage_submissions'], function () {
     Route::get('/', 'ArtTrackerController@getTrackerQueue');
     Route::get('/{status}', 'ArtTrackerController@getTrackerQueue')->where('status', 'pending|approved|rejected');
     Route::get('edit/{id}', 'ArtTrackerController@getTrackerSubmission');

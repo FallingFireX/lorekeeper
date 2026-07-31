@@ -53,6 +53,8 @@ Route::group(['prefix' => 'user', 'namespace' => 'Users'], function () {
     Route::get('{name}/character-art', 'UserController@getUserCharacterArt');
     Route::get('{name}/favorites', 'UserController@getUserFavorites');
     Route::get('{name}/favorites/own-characters', 'UserController@getUserOwnCharacterFavorites');
+    Route::get('{slug}/tracker', 'CharacterController@getCharacterTracker');
+    Route::get('{slug}/tracker/{id}', 'CharacterController@getCharacterTrackerEntry');
 
     Route::get('{name}', 'UserController@getUser');
     Route::get('{name}/aliases', 'UserController@getUserAliases');
@@ -186,9 +188,8 @@ Route::group(['prefix' => 'reports', 'namespace' => 'Users'], function () {
 });
 
 Route::group(['prefix' => 'fp'], function () {
-    Route::get('/calculator', 'calculatorController@getCalc');
-    Route::post('/art-submission', 'calculatorController@store');
-    Route::put('/art-submission/{id}', 'calculatorController@update');
-    Route::get('/art-submission/{id}/edit', 'calculatorController@edit');
-
+    Route::get('/calculator/create', 'calculatorController@getCalc');
+    Route::get('/calculator/edit/{id}', 'calculatorController@getEditCalc');
+    Route::post('/calculator/create', 'calculatorController@postCreateEditTracker');
+    Route::post('/calculator/edit/{id}', 'calculatorController@postCreateEditTracker');
 });

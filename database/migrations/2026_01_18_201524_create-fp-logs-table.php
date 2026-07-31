@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('dp_logs', function (Blueprint $table) {
+       Schema::create('fp_logs', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('character_id');
             $table->integer('admin_id');

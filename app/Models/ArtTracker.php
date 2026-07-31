@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Gallery\GallerySubmission;
 use App\Models\User\User;
 use App\Models\Character\Character;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class ArtTracker extends Model
 {
@@ -16,7 +18,7 @@ class ArtTracker extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'character_id', 'data', 'url', 'external_url',
+        'user_id', 'character_id', 'total', 'url', 'external_url',
         'notes', 'staff_comments', 'status', 'staff_id'
     ];
 
@@ -25,7 +27,7 @@ class ArtTracker extends Model
      *
      * @var string
      */
-    protected $table = 'art_submissions';
+    protected $table = 'fp_submissions';
 
     /**
      * The attributes that should be cast to native types.
@@ -196,5 +198,46 @@ class ArtTracker extends Model
         }
 
         return GallerySubmission::find($this->data['gallery_submission_id'] ?? null);
+    }
+
+    public function getDeviantArtImageAttribute()
+    {
+        if (!$this->external_url) {
+            return null;
+        }
+
+        // 1. Match standard links, stash links, or fav.me short links
+        $isDeviantArt = str_contains($this->external_url, 'deviantart.com') || 
+                        str_contains($this->external_url, 'fav.me');
+
+        if (!$isDeviantArt) {
+            return null;
+        }
+
+        // 2. Clear old cached null values during development by appending '_v2' 
+        // to the key, or use Cache::forget('tracker_img_' . $this->id) if needed.
+        return Cache::remember('tracker_img_v2_' . $this->id, 604800, function () {
+            try {
+                // 3. DeviantArt blocks requests without a custom browser User-Agent
+                $response = Http::withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Laravel/ArtTracker'
+                ])->timeout(5)->get('https://backend.deviantart.com/oembed', [
+                    'url'    => $this->external_url,
+                    'format' => 'json'
+                ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    
+                    // DeviantArt returns standard art files under 'url'
+                    return $data['url'] ?? null;
+                }
+            } catch (\Exception $e) {
+                // Logs any hidden API timeouts or errors to storage/logs/laravel.log
+                \Log::error('DeviantArt oEmbed Fail: ' . $e->getMessage());
+                return null; 
+            }
+            return null;
+        });
     }
 }
