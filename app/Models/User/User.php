@@ -18,8 +18,8 @@ use App\Models\Rank\Rank;
 use App\Models\Rank\RankPower;
 use App\Models\Shop\ShopLog;
 use App\Models\Submission\Submission;
-use App\Traits\Commenter;
 use App\Models\Team;
+use App\Traits\Commenter;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -246,7 +246,6 @@ class User extends Authenticatable implements MustVerifyEmail {
         return $query->leftJoin('user_aliases', 'users.id', '=', 'user_aliases.user_id')
             ->orderByRaw('user_aliases.alias IS NULL ASC, user_aliases.alias '.($reverse ? 'DESC' : 'ASC'));
     }
-
 
     /**********************************************************************************************
 
@@ -686,14 +685,13 @@ class User extends Authenticatable implements MustVerifyEmail {
         return CharacterBookmark::where('user_id', $this->id)->where('character_id', $character->id)->first();
     }
 
-    public function adminRoles(){
+    public function adminRoles() {
         return $this->hasMany(UserTeam::class, 'user_id');
     }
 
-    public function teams(){
-            return $this->belongsToMany(Team::class, 'user_admin_role', 'user_id', 'team_id')
-                        ->withPivot('type')
-                        ->withTimestamps();
-        }
-
+    public function teams() {
+        return $this->belongsToMany(Team::class, 'user_admin_role', 'user_id', 'team_id')
+            ->withPivot('type')
+            ->withTimestamps();
+    }
 }

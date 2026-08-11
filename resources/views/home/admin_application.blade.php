@@ -8,7 +8,7 @@
     {!! breadcrumbs(['Applications' => 'applications', 'Application (#' . $applications->id . ')' => $applications->viewUrl]) !!}
 
     <h1 class="mb-2">
-      Application #{{ $applications->id }}
+        Application #{{ $applications->id }}
     </h1>
     <div class="row mt-4">
         <div class="col-md-3">
@@ -27,20 +27,19 @@
             </div>
         </div>
     </div>
-     <h3 class="mt-4">Application contents</h3>
+    <h3 class="mt-4">Application contents</h3>
     <div class="card mb-3">
         <div class="card-body">{!! $applications->application !!}</div>
     </div>
 
-<!-- I make comments read only here under the assumption that most groups dont want sad or upset players replying to them about denied applications.
- Setting "read_only" to false will allow replies as normal. -->
+    <!-- I make comments read only here under the assumption that most groups dont want sad or upset players replying to them about denied applications.
+     Setting "read_only" to false will allow replies as normal. -->
     <div class="comments">
-            @comments([
-                'model' => $applications,
-                'perPage' => 5,
-                'allow_dislikes' => false,
-                'read_only' => $is_read_only,
-            ])
+        @comments([
+            'model' => $applications,
+            'perPage' => 5,
+            'allow_dislikes' => false,
+            'read_only' => $is_read_only,
+        ])
     </div>
-     
 @endsection

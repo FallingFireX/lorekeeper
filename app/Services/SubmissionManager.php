@@ -505,6 +505,68 @@ class SubmissionManager extends Service {
     }
 
     /**
+     * Marks a submission as claimed for a trainee.
+     *
+     * @param array                 $data
+     * @param \App\Models\User\User $user
+     */
+    public function holdSubmission($data, $user) {
+        DB::beginTransaction();
+
+        try {
+            // 1. check that the submission exists
+            // 2. check that the submission is pending
+            $submission = Submission::where('status', 'Pending')->where('id', $data['id'])->first();
+            if (!$submission) {
+                throw new \Exception('Invalid submission.');
+            }
+
+            if (isset($data['holding_for_trainee'])) {
+                $trainee = User::find($data['trainee_id']);
+
+                if (!$trainee || !$trainee->teams()->wherePivot('type', 'Trainee')->exists()) {
+                    throw new \Exception('Trainee could not be found. Please ensure they are a trainee.');
+                }
+
+                $submission->update([
+                    'staff_id'              => $user->id,
+                    'trainee_id'            => $data['trainee_id'],
+                    'status'                => 'Hold',
+                ]);
+
+                Notifications::create($submission->prompt_id ? 'SUBMISSION_HELD_FOR_TRAINEE' : 'CLAIM_HELD_FOR_TRAINEE', $submission->user, [
+                    'submission_id' => $submission->id,
+                    'url'           => $trainee->url,
+                ]);
+
+                if (!$this->logAdminAction($user, 'Submission Marked as Claimed for Trainee', 'Marked submission <a href="'.$submission->viewurl.'">#'.$submission->id.'</a> as claimed for trainee - '.$trainee->name ?? '')) {
+                    throw new \Exception('Failed to log admin action.');
+                }
+            } else {
+                $submission->update([
+                    'staff_id'              => $user->id,
+                    'status'                => 'Hold',
+                ]);
+
+                if (!$this->logAdminAction($user, 'Submission Held', 'Marked submission <a href="'.$submission->viewurl.'">#'.$submission->id.'</a> for hold.')) {
+                    throw new \Exception('Failed to log admin action.');
+                }
+
+                Notifications::create($submission->prompt_id ? 'SUBMISSION_HELD' : 'CLAIM_HELD', $submission->user, [
+                    'submission_id' => $submission->id,
+                    'url'           => $trainee->url,
+                ]);
+            }
+
+            return $this->commitReturn($submission);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+
+        return $this->rollbackReturn(false);
+    }
+
+    /**
      * Deletes a submission.
      *
      * @param mixed $data the data of the submission to be deleted

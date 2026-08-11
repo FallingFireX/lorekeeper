@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Facades\Settings;
+use App\Http\Controllers\Controller;
 use App\Models\Submission\AdminApplication;
 use App\Models\Team;
 use App\Services\AdminApplicationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class AdminApplicationController extends Controller {
     /**
@@ -20,7 +19,7 @@ class AdminApplicationController extends Controller {
      */
     public function getApplicationIndex(Request $request, $status = null) {
         $applications = AdminApplication::with('team')->where('status', $status ? ucfirst($status) : 'Pending');
-       
+
         if (isset($data['sort'])) {
             switch ($data['sort']) {
                 case 'newest':
@@ -36,7 +35,7 @@ class AdminApplicationController extends Controller {
 
         return view('admin.team.application_index', [
             'applications' => $applications->paginate(30)->appends($request->query()),
-            'teams' => Team::orderBy('id')->first(),
+            'teams'        => Team::orderBy('id')->first(),
         ]);
     }
 
@@ -49,24 +48,24 @@ class AdminApplicationController extends Controller {
      */
     public function getApplication($id) {
         $applications = AdminApplication::where('id', $id)->first();
-        
+
         if (!$applications) {
             abort(404);
         }
 
         return view('admin.team.application', [
             'applications'       => $applications,
-            'teams' => Team::orderBy('id')->first(),
-            'settings'   => Settings::get('notify_staff_applicants'),
+            'teams'              => Team::orderBy('id')->first(),
+            'settings'           => Settings::get('notify_staff_applicants'),
         ]);
     }
 
-
     /**
-     * Accept or deny a application
+     * Accept or deny a application.
+     *
+     * @param mixed|null $id
      */
-    public function postApplication(Request $request, $id = null, AdminApplicationService $service)
-    {
+    public function postApplication(Request $request, $id, AdminApplicationService $service) {
         $application = AdminApplication::findOrFail($id);
 
         if (!in_array($request->input('status'), ['accepted', 'denied'])) {
@@ -85,8 +84,6 @@ class AdminApplicationController extends Controller {
             $service->rejectApplicant($data, $userId);
         }
 
-        return redirect()->back()->with('success', 'Application ' . strtolower($request->input('status')) . ' successfully.');
+        return redirect()->back()->with('success', 'Application '.strtolower($request->input('status')).' successfully.');
     }
-
- 
 }

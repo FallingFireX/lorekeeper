@@ -159,4 +159,10 @@ class Notification extends Model {
     public const GALLERY_SUBMISSION_PARTICIPANT = 515;
     public const APPLICATION_ACCEPTED = 1701;
     public const APPLICATION_DENIED = 1702;
+    public const SUBMISSION_HELD_FOR_TRAINEE = 1703;
+    public const SUBMISSION_HELD = 1704;
+    public const CLAIM_HELD_FOR_TRAINEE = 1705;
+    public const CLAIM_HELD = 1706;
+    public const DESIGN_HELD_FOR_TRAINEE = 1707;
+    public const DESIGN_HELD = 1708;
 }

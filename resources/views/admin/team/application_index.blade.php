@@ -5,7 +5,7 @@
 @endsection
 
 @section('admin-content')
-        {!! breadcrumbs(['Admin Panel' => 'admin', 'Admin Applications' => 'admin/applications/pending']) !!}
+    {!! breadcrumbs(['Admin Panel' => 'admin', 'Admin Applications' => 'admin/applications/pending']) !!}
 
     <h1>
         Applications Queue
@@ -13,8 +13,7 @@
 
     <ul class="nav nav-tabs mb-3">
         <li class="nav-item">
-            <a class="nav-link {{ set_active('admin/applications/pending') }} {{ set_active('admin/applications/pending') }}"
-                href="{{ url('admin/applications/pending') }}">Pending</a>
+            <a class="nav-link {{ set_active('admin/applications/pending') }} {{ set_active('admin/applications/pending') }}" href="{{ url('admin/applications/pending') }}">Pending</a>
         </li>
         <li class="nav-item">
             <a class="nav-link {{ set_active('admin/applications/accepted') }}" href="{{ url('admin/applications/accepted') }}">Accepted</a>
@@ -23,7 +22,7 @@
             <a class="nav-link {{ set_active('admin/applications/denied') }}" href="{{ url('admin/applications/denied') }}">Denied</a>
         </li>
     </ul>
-   
+
     <div class="mb-4 logs-table">
         <div class="logs-table-header">
             <div class="row">
@@ -69,13 +68,10 @@
                                 {!! pretty_date($application->created_at) !!}
                             </div>
                         </div>
-                        
+
                     </div>
                 </div>
             @endforeach
         </div>
     </div>
-    
-
- 
 @endsection

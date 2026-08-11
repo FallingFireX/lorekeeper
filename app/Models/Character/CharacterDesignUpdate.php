@@ -19,7 +19,7 @@ class CharacterDesignUpdate extends Model {
      * @var array
      */
     protected $fillable = [
-        'character_id', 'status', 'user_id', 'staff_id',
+        'character_id', 'status', 'user_id', 'staff_id', 'trainee_id',
         'comments', 'staff_comments', 'data', 'extension',
         'use_cropper', 'x0', 'x1', 'y0', 'y1',
         'hash', 'species_id', 'subtype_id', 'rarity_id',
@@ -88,6 +88,13 @@ class CharacterDesignUpdate extends Model {
      */
     public function staff() {
         return $this->belongsTo(User::class, 'staff_id');
+    }
+
+    /**
+     * Get the trainee who processed the submission.
+     */
+    public function trainee() {
+        return $this->belongsTo(User::class, 'trainee_id');
     }
 
     /**

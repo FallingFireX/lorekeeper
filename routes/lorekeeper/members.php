@@ -209,7 +209,6 @@ Route::group(['prefix' => 'applications', 'namespace' => 'Users'], function () {
     Route::get('new', 'AdminApplicationController@getNewApplication');
     Route::post('new', 'AdminApplicationController@postNewApplication')->name('applications.store');
     Route::get('{id}', 'AdminApplicationController@getApplication');
-    
 });
 
 /**************************************************************************************************

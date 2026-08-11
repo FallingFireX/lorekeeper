@@ -2,26 +2,25 @@
 
 namespace App\Models\Submission;
 
+use App\Models\Team;
+use App\Models\User\User;
+use App\Traits\Commentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Commentable;
-use App\Models\User\User;
-use App\Models\Team;
 
-class AdminApplication extends Model
-{
+class AdminApplication extends Model {
     use Commentable;
     use HasFactory;
 
-       /**
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'team_id', 'user_id', 'admin_id', 
-        'application', 'admin_message', 
-        'status', 
+        'team_id', 'user_id', 'admin_id',
+        'application', 'admin_message',
+        'status',
     ];
 
     /**
@@ -36,7 +35,6 @@ class AdminApplication extends Model
      * @var string
      */
     public $timestamps = true;
-
 
     /**********************************************************************************************
 
@@ -110,13 +108,11 @@ class AdminApplication extends Model
     **********************************************************************************************/
 
     /**
-     * Get the admin URL (for processing purposes) of the application
+     * Get the admin URL (for processing purposes) of the application.
      *
      * @return string
      */
     public function getAdminUrlAttribute() {
         return url('admin/applications/edit/'.$this->id);
     }
-
-    }
-
+}

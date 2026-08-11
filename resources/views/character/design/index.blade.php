@@ -29,6 +29,9 @@
             <li class="nav-item">
                 <a class="nav-link {{ $status == 'rejected' ? 'active' : '' }}" href="{{ url('designs/rejected') }}">Rejected</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ $status == 'hold' ? 'active' : '' }}" href="{{ url('designs/hold') }}"><i class="fas fa-hand-paper"></i> On Hold</a>
+            </li>
         </ul>
     @endif
 

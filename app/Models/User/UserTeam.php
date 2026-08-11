@@ -2,12 +2,11 @@
 
 namespace App\Models\User;
 
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Team;
 
-class UserTeam extends Model
-{
+class UserTeam extends Model {
     use HasFactory;
     /**
      * The attributes that are mass assignable.
@@ -15,7 +14,7 @@ class UserTeam extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'type', 
+        'user_id', 'type',
     ];
 
     /**
@@ -32,26 +31,21 @@ class UserTeam extends Model
      */
     protected $with = ['team'];
 
-    
-  
     /**********************************************************************************************
 
         ACCESSORS
 
     **********************************************************************************************/
 
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }
-    
-    public function team()
-    {
+
+    public function team() {
         return $this->belongsTo(Team::class, 'team_id');
     }
-    
-    public function getRolePriorityAttribute()
-    {
+
+    public function getRolePriorityAttribute() {
         return match ($this->type ?? 'Primary') {
             'Lead'      => 1,
             'Primary'   => 2,
@@ -59,6 +53,5 @@ class UserTeam extends Model
             'Trainee'   => 4,
             default     => 2,
         };
-}
-    
+    }
 }

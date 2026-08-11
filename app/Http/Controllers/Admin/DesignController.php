@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Character\CharacterCategory;
 use App\Models\Character\CharacterDesignUpdate;
+use App\Models\User\User;
+use App\Models\User\UserTeam;
 use App\Services\DesignUpdateManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +22,7 @@ class DesignController extends Controller {
      */
     public function getDesignIndex(Request $request, $type, $status) {
         $requests = CharacterDesignUpdate::where('status', ucfirst($status));
-        $data = $request->only(['sort']);
+        $data = $request->only(['sort', 'trainee']);
         if (isset($data['sort'])) {
             switch ($data['sort']) {
                 case 'newest':
@@ -38,10 +40,15 @@ class DesignController extends Controller {
         } else {
             $requests = $requests->characters();
         }
+        if ($status == 'hold' && isset($data['trainee'])) {
+            $requests->where('trainee_id', $data['trainee']);
+        }
 
         return view('admin.designs.index', [
-            'requests' => $requests->paginate(30)->appends($request->query()),
-            'isMyo'    => ($type == 'myo-approvals'),
+            'requests'      => $requests->paginate(30)->appends($request->query()),
+            'isMyo'         => ($type == 'myo-approvals'),
+            'showTrainees'  => $status === 'hold',
+            ...($status === 'hold' ? ['trainees' => ['' => 'Select Trainee'] + User::whereIn('id', UserTeam::where('type', 'Trainee')->pluck('user_id')->toArray())->orderBy('name')->pluck('name', 'id')->toArray()] : []),
         ]);
     }
 
@@ -79,6 +86,8 @@ class DesignController extends Controller {
             flash('Request approved successfully.')->success();
         } elseif ($action == 'reject' && $service->rejectRequest($request->only(['staff_comments']), $r, Auth::user())) {
             flash('Request rejected successfully.')->success();
+        } elseif ($action == 'hold' && $service->holdRequest($request->only(['holding_for_trainee', 'trainee_id']), $r, Auth::user())) {
+            flash('Request held successfully.')->success();
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();

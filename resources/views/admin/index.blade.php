@@ -202,7 +202,7 @@
             @endif
         @endif
         @if (Auth::user()->hasPower('edit_teams'))
-        <div class="col-sm-6">
+            <div class="col-sm-6">
                 <div class="card mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Team applications
@@ -223,20 +223,20 @@
                     </div>
                 </div>
             </div>
-        </div>
-        @endif
+    </div>
+    @endif
     <h3>Team responsibilities</h3>
-    
-        <div class="row">
-            @foreach ($teams as $team)
-                @if($team->responsibilities)
-                    <div class="col-md-3">
-                        <div class="card p-3">
-                            <h4>{{ $team->name }}</h4>
-                            <p>{!! $team->responsibilities !!}</p>
-                        </div>
+
+    <div class="row">
+        @foreach ($teams as $team)
+            @if ($team->responsibilities)
+                <div class="col-md-3">
+                    <div class="card p-3">
+                        <h4>{{ $team->name }}</h4>
+                        <p>{!! $team->responsibilities !!}</p>
                     </div>
-                @endif
-            @endforeach
-        </div>
+                </div>
+            @endif
+        @endforeach
+    </div>
 @endsection

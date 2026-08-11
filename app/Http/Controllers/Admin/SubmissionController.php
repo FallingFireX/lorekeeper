@@ -10,6 +10,8 @@ use App\Models\Loot\LootTable;
 use App\Models\Prompt\PromptCategory;
 use App\Models\Raffle\Raffle;
 use App\Models\Submission\Submission;
+use App\Models\User\User;
+use App\Models\User\UserTeam;
 use App\Services\SubmissionManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +26,7 @@ class SubmissionController extends Controller {
      */
     public function getSubmissionIndex(Request $request, $status = null) {
         $submissions = Submission::with('prompt')->where('status', $status ? ucfirst($status) : 'Pending')->whereNotNull('prompt_id');
-        $data = $request->only(['prompt_category_id', 'sort']);
+        $data = $request->only(['prompt_category_id', 'sort', 'trainee']);
         if (isset($data['prompt_category_id']) && $data['prompt_category_id'] != 'none') {
             $submissions->whereHas('prompt', function ($query) use ($data) {
                 $query->where('prompt_category_id', $data['prompt_category_id']);
@@ -42,11 +44,16 @@ class SubmissionController extends Controller {
         } else {
             $submissions->sortOldest();
         }
+        if ($status == 'hold' && isset($data['trainee'])) {
+            $submissions->where('trainee_id', $data['trainee']);
+        }
 
         return view('admin.submissions.index', [
-            'submissions' => $submissions->paginate(30)->appends($request->query()),
-            'categories'  => ['none' => 'Any Category'] + PromptCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
-            'isClaims'    => false,
+            'submissions'   => $submissions->paginate(30)->appends($request->query()),
+            'categories'    => ['none' => 'Any Category'] + PromptCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
+            'isClaims'      => false,
+            'showTrainees'  => $status === 'hold',
+            ...($status === 'hold' ? ['trainees' => ['' => 'Select Trainee'] + User::whereIn('id', UserTeam::where('type', 'Trainee')->pluck('user_id')->toArray())->orderBy('name')->pluck('name', 'id')->toArray()] : []),
         ]);
     }
 
@@ -72,13 +79,14 @@ class SubmissionController extends Controller {
             'page'             => 'submission',
             'expanded_rewards' => config('lorekeeper.extensions.character_reward_expansion.expanded'),
             'characters'       => Character::visible(Auth::check() ? Auth::user() : null)->myo(0)->orderBy('slug', 'DESC')->get()->pluck('fullName', 'slug')->toArray(),
-        ] + ($submission->status == 'Pending' ? [
+        ] + ($submission->status == 'Pending' || $submission->status == 'Hold' ? [
             'characterCurrencies' => Currency::where('is_character_owned', 1)->orderBy('sort_character', 'DESC')->pluck('name', 'id'),
             'items'               => Item::orderBy('name')->pluck('name', 'id'),
             'currencies'          => Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id'),
             'tables'              => LootTable::orderBy('name')->pluck('name', 'id'),
             'raffles'             => Raffle::where('rolled_at', null)->where('is_active', 1)->orderBy('name')->pluck('name', 'id'),
             'count'               => Submission::where('prompt_id', $submission->prompt_id)->where('status', 'Approved')->where('user_id', $submission->user_id)->count(),
+            'trainees'            => User::whereIn('id', UserTeam::where('type', 'Trainee')->pluck('user_id')->toArray())->orderBy('name')->pluck('name', 'id'),
         ] : []));
     }
 
@@ -106,8 +114,10 @@ class SubmissionController extends Controller {
         }
 
         return view('admin.submissions.index', [
-            'submissions' => $submissions->paginate(30),
-            'isClaims'    => true,
+            'submissions'   => $submissions->paginate(30),
+            'isClaims'      => true,
+            'showTrainees'  => $status === 'hold',
+            ...($status === 'hold' ? ['trainees' => ['' => 'Select Trainee'] + User::whereIn('id', UserTeam::where('type', 'Trainee')->pluck('user_id')->toArray())->orderBy('name')->pluck('name', 'id')->toArray()] : []),
         ]);
     }
 
@@ -152,7 +162,7 @@ class SubmissionController extends Controller {
      * @return \Illuminate\Http\RedirectResponse
      */
     public function postSubmission(Request $request, SubmissionManager $service, $id, $action) {
-        $data = $request->only(['slug',  'character_rewardable_quantity', 'character_rewardable_id',  'character_rewardable_type', 'character_currency_id', 'rewardable_type', 'rewardable_id', 'quantity', 'staff_comments']);
+        $data = $request->only(['slug',  'character_rewardable_quantity', 'character_rewardable_id',  'character_rewardable_type', 'character_currency_id', 'rewardable_type', 'rewardable_id', 'quantity', 'staff_comments', 'holding_for_trainee', 'trainee_id']);
         if ($action == 'reject' && $service->rejectSubmission($request->only(['staff_comments']) + ['id' => $id], Auth::user())) {
             flash('Submission rejected successfully.')->success();
         } elseif ($action == 'cancel' && $service->cancelSubmission($request->only(['staff_comments']) + ['id' => $id], Auth::user())) {
@@ -161,6 +171,9 @@ class SubmissionController extends Controller {
             return redirect()->to('admin/submissions');
         } elseif ($action == 'approve' && $service->approveSubmission($data + ['id' => $id], Auth::user())) {
             flash('Submission approved successfully.')->success();
+        } elseif ($action == 'traineemark' && $service->holdSubmission($data + ['id' => $id], Auth::user())) {
+            $trainee_name = User::find($data['trainee_id'])->name ?? 'trainee';
+            flash('Submission marked as claimed for '.$trainee_name.' successfully.')->success();
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();

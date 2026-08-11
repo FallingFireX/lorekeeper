@@ -924,6 +924,73 @@ class DesignUpdateManager extends Service {
     }
 
     /**
+     * Holds a character design update request.
+     *
+     * @param array                                       $data
+     * @param \App\Models\Character\CharacterDesignUpdate $request
+     * @param \App\Models\User\User                       $user
+     *
+     * @return bool
+     */
+    public function holdRequest($data, $request, $user) {
+        DB::beginTransaction();
+
+        try {
+            if ($request->status != 'Pending') {
+                throw new \Exception('This request cannot be processed.');
+            }
+
+            if (isset($data['holding_for_trainee'])) {
+                $trainee = User::find($data['trainee_id']);
+
+                if (!$trainee) {
+                    throw new \Exception('Trainee could not be found. Please ensure they are a trainee.');
+                }
+
+                if (!$this->logAdminAction($user, 'Held Design Update', 'Held design update <a href="'.$request->url.'">#'.$request->id.'</a> for trainee.')) {
+                    throw new \Exception('Failed to log admin action.');
+                }
+
+                // Set staff comment and status
+                $request->staff_id = $user->id;
+                $request->trainee_id = $data['trainee_id'];
+                $request->status = 'Hold';
+                $request->save();
+
+                // Notify the user
+                Notifications::create('DESIGN_HELD_FOR_TRAINEE', $request->user, [
+                    'design_url'    => $request->url,
+                    'character_url' => $request->character->url,
+                    'name'          => $request->character->fullName,
+                ]);
+            } else {
+                if (!$this->logAdminAction($user, 'Held Design Update', 'Held design update <a href="'.$request->url.'">#'.$request->id.'</a> for '.$user->displayName.'.')) {
+                    throw new \Exception('Failed to log admin action.');
+                }
+
+                // Set staff comment and status
+                $request->staff_id = $user->id;
+                $request->staff_comments = $data['staff_comments'] ?? null;
+                $request->status = 'Hold';
+                $request->save();
+
+                // Notify the user
+                Notifications::create('DESIGN_HELD', $request->user, [
+                    'design_url'    => $request->url,
+                    'character_url' => $request->character->url,
+                    'name'          => $request->character->fullName,
+                ]);
+            }
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+
+        return $this->rollbackReturn(false);
+    }
+
+    /**
      * Votes on a character design update request.
      *
      * @param string                                      $action

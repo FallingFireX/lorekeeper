@@ -451,4 +451,47 @@ return [
         'message' => 'Your application to the {team_name} team has been declined. Please feel free to apply again in the future! (<a href="{url}">View Applications</a>)',
         'url'     => 'applications',
     ],
+
+    // SUBMISSION_HELD_FOR_TRAINEE
+    1703 => [
+        'name'    => 'Submission Under Trainee Review',
+        'message' => 'Your submission (#{submission_id}) is under trainee review. Due to this please be patient as it may take additional time to be processed! (<a href="{url}">View Submission</a>)',
+        'url'     => 'submissions/view/{submission_id}',
+    ],
+
+    // SUBMISSION_HELD
+    1704 => [
+        'name'    => 'Submission Held',
+        'message' => 'Your submission (#{submission_id}) was held by an admin, we will get back to you on your submission as soon as possible. (<a href="{url}">View Submission</a>)',
+        'url'     => 'submissions/view/{submission_id}',
+    ],
+
+    // CLAIM_HELD_FOR_TRAINEE
+    1705 => [
+        'name'    => 'Claim Under Trainee Review',
+        'message' => 'Your submission (#{submission_id}) is under trainee review. Due to this please be patient as it may take additional time to be processed! (<a href="{url}">View Claim</a>)',
+        'url'     => 'claims/view/{submission_id}',
+    ],
+
+    // CLAIM_HELD
+    1706 => [
+        'name'    => 'Claim Held',
+        'message' => 'Your claim (#{submission_id}) was held by an admin, we will get back to you on your claim as soon as possible. (<a href="{url}">View Claim</a>)',
+        'url'     => 'claims/view/{submission_id}',
+    ],
+
+    // DESIGN_HELD_FOR_TRAINEE
+    1707  => [
+        'name'    => 'Design Update Held for Trainee Review',
+        'message' => 'The <a href="{design_url}">design update</a> for <a href="{character_url}">{name}</a> has been held for trainee review. Due to this please be patient as it may take additional time to be processed! (<a href="{url}">View Design Approvals</a>)',
+        'url'     => 'designs',
+    ],
+
+    // DESIGN_HELD
+    1708  => [
+        'name'    => 'Design Update Held',
+        'message' => 'The <a href="{design_url}">design update</a> for <a href="{character_url}">{name}</a> has been held for review. (<a href="{url}">View Design Approvals</a>)',
+        'url'     => 'designs',
+    ],
+
 ];

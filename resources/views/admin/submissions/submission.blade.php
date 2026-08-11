@@ -11,7 +11,7 @@
         {!! breadcrumbs(['Admin Panel' => 'admin', 'Claim Queue' => 'admin/claims/pending', 'Claim (#' . $submission->id . ')' => $submission->viewUrl]) !!}
     @endif
 
-    @if ($submission->status == 'Pending')
+    @if ($submission->status == 'Pending' || $submission->status == 'Hold')
 
         <h1>
             {{ $submission->prompt_id ? 'Submission' : 'Claim' }} (#{{ $submission->id }})
@@ -27,6 +27,20 @@
                 </div>
                 <div class="col-md-10 col-8">{!! $submission->user->displayName !!}</div>
             </div>
+            @if ($submission->status == 'Hold')
+                <div class="row mb-2 no-gutters">
+                    <div class="col-md-2">
+                        <h5 class="mb-0"><i class="fas fa-hand-paper text-warning"></i> On Hold for Review</h5>
+                    </div>
+                    <div class="col-md-10">
+                        @if ($submission->trainee)
+                            {!! $submission->trainee->displayName !!} (Supervised by {!! $submission->staff->displayName !!})
+                        @else
+                            {!! $submission->user->displayName !!}
+                        @endif
+                    </div>
+                </div>
+            @endif
             @if ($submission->prompt_id)
                 <div class="row">
                     <div class="col-md-2 col-4">
@@ -151,9 +165,73 @@
         </div>
 
         <div class="text-right">
+            @if ($submission->status == 'Pending')
+                <a href="#" class="btn btn-warning mr-2" id="traineeButton">Hold Submission</a>
+            @endif
             <a href="#" class="btn btn-danger mr-2" id="rejectionButton">Reject</a>
             <a href="#" class="btn btn-secondary mr-2" id="cancelButton">Cancel</a>
             <a href="#" class="btn btn-success" id="approvalButton">Approve</a>
+        </div>
+
+        <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content hide" id="approvalContent">
+                    <div class="modal-header">
+                        <span class="modal-title h5 mb-0">Confirm Approval</span>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>This will approve the {{ $submission->prompt_id ? 'submission' : 'claim' }} and distribute the above rewards to the user.</p>
+                        <div class="text-right">
+                            <a href="#" id="approvalSubmit" class="btn btn-success">Approve</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-content hide" id="cancelContent">
+                    <div class="modal-header">
+                        <span class="modal-title h5 mb-0">Confirm Cancellation</span>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>This will cancel the {{ $submission->prompt_id ? 'submission' : 'claim' }} and send it back to drafts. Make sure to include a staff comment if you do this!</p>
+                        <div class="text-right">
+                            <a href="#" id="cancelSubmit" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-content hide" id="rejectionContent">
+                    <div class="modal-header">
+                        <span class="modal-title h5 mb-0">Confirm Rejection</span>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>This will reject the {{ $submission->prompt_id ? 'submission' : 'claim' }}.</p>
+                        <div class="text-right">
+                            <a href="#" id="rejectionSubmit" class="btn btn-danger">Reject</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-content hide" id="traineeContent">
+                    <div class="modal-header">
+                        <span class="modal-title h5 mb-0">Confirm Hold</span>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>By marking this submission as held it will add it to the hold queue. If this submission is to be held by a trainee please select the trainee.</p>
+                        <div class="form-check mb-2">
+                            {!! Form::checkbox('holding_for_trainee', 1, 0, ['class' => 'form-check-input', 'id' => 'holding_for_trainee', 'data-toggle' => 'toggle']) !!}
+                            {!! Form::label('holding_for_trainee', 'Is this a hold for a trainee?', ['class' => 'form-check-label ml-2']) !!}
+                        </div>
+                        <div class="trainee-fields" style="display:none;">
+                            <p>This will mark the {{ $submission->prompt_id ? 'submission' : 'claim' }} as a trainee claim.</p>
+                            {!! Form::select('trainee_id', $trainees, null, ['class' => 'form-control', 'placeholder' => 'Select Trainee']) !!}
+                        </div>
+                        <div class="text-right mt-2">
+                            <a href="#" id="traineeSubmit" class="btn btn-primary">Mark as Held</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {!! Form::close() !!}
@@ -226,47 +304,6 @@
             </table>
         </div>
         @include('widgets._loot_select_row', ['showLootTables' => true, 'showRaffles' => true])
-
-        <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content hide" id="approvalContent">
-                    <div class="modal-header">
-                        <span class="modal-title h5 mb-0">Confirm Approval</span>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <p>This will approve the {{ $submission->prompt_id ? 'submission' : 'claim' }} and distribute the above rewards to the user.</p>
-                        <div class="text-right">
-                            <a href="#" id="approvalSubmit" class="btn btn-success">Approve</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-content hide" id="cancelContent">
-                    <div class="modal-header">
-                        <span class="modal-title h5 mb-0">Confirm Cancellation</span>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <p>This will cancel the {{ $submission->prompt_id ? 'submission' : 'claim' }} and send it back to drafts. Make sure to include a staff comment if you do this!</p>
-                        <div class="text-right">
-                            <a href="#" id="cancelSubmit" class="btn btn-secondary">Cancel</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-content hide" id="rejectionContent">
-                    <div class="modal-header">
-                        <span class="modal-title h5 mb-0">Confirm Rejection</span>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <p>This will reject the {{ $submission->prompt_id ? 'submission' : 'claim' }}.</p>
-                        <div class="text-right">
-                            <a href="#" id="rejectionSubmit" class="btn btn-danger">Reject</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     @else
         <div class="alert alert-danger">This {{ $submission->prompt_id ? 'submission' : 'claim' }} has already been processed.</div>
         @include('home._submission_content', ['submission' => $submission])
@@ -297,11 +334,16 @@
                 var $cancelContent = $('#cancelContent');
                 var $cancelSubmit = $('#cancelSubmit');
 
+                var $traineeButton = $('#traineeButton');
+                var $traineeContent = $('#traineeContent');
+                var $traineeSubmit = $('#traineeSubmit');
+
                 $approvalButton.on('click', function(e) {
                     e.preventDefault();
                     $approvalContent.removeClass('hide');
                     $rejectionContent.addClass('hide');
                     $cancelContent.addClass('hide');
+                    $traineeContent.addClass('hide');
                     $confirmationModal.modal('show');
                 });
 
@@ -310,6 +352,7 @@
                     $rejectionContent.removeClass('hide');
                     $approvalContent.addClass('hide');
                     $cancelContent.addClass('hide');
+                    $traineeContent.addClass('hide');
                     $confirmationModal.modal('show');
                 });
 
@@ -318,6 +361,16 @@
                     $cancelContent.removeClass('hide');
                     $rejectionContent.addClass('hide');
                     $approvalContent.addClass('hide');
+                    $traineeContent.addClass('hide');
+                    $confirmationModal.modal('show');
+                });
+
+                $traineeButton.on('click', function(e) {
+                    e.preventDefault();
+                    $traineeContent.removeClass('hide');
+                    $rejectionContent.addClass('hide');
+                    $approvalContent.addClass('hide');
+                    $cancelContent.addClass('hide');
                     $confirmationModal.modal('show');
                 });
 
@@ -337,6 +390,20 @@
                     e.preventDefault();
                     $submissionForm.attr('action', '{{ url()->current() }}/cancel');
                     $submissionForm.submit();
+                });
+
+                $traineeSubmit.on('click', function(e) {
+                    e.preventDefault();
+                    $submissionForm.attr('action', '{{ url()->current() }}/traineemark');
+                    $submissionForm.submit();
+                });
+
+                $('#holding_for_trainee').on('change', function() {
+                    if ($(this).is(':checked')) {
+                        $('.trainee-fields').show();
+                    } else {
+                        $('.trainee-fields').hide();
+                    }
                 });
             });
         </script>

@@ -1,59 +1,59 @@
 {{-- Action buttons --}}
 @if (Auth::check())
     <div class="my-1 row justify-content-between no-gutters">
-    @if(empty($read_only) || !$read_only)
-        <div class="col-auto">
-            @can('reply-to-comment', $comment)
-                <button data-toggle="modal" data-target="#reply-modal-{{ $comment->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-faded text-uppercase"><i class="fas fa-comment"></i><span
-                        class="ml-2 d-none d-sm-inline-block">Reply</span></button>
-            @endcan
-            @can('edit-comment', $comment)
-                <button data-toggle="modal" data-target="#comment-modal-{{ $comment->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-faded text-uppercase"><i class="fas fa-edit"></i><span
-                        class="ml-2 d-none d-sm-inline-block">Edit</span></button>
-            @endcan
-            @if (((Auth::user()->id == $comment->commentable_id && $comment->commentable_type == 'App\Models\User\UserProfile') || Auth::user()->isStaff) && (isset($compact) && !$compact))
-                <button data-toggle="modal" data-target="#feature-modal-{{ $comment->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-faded text-success text-uppercase"><i class="fas fa-star"></i><span
-                        class="ml-2 d-none d-sm-inline-block">{{ $comment->is_featured ? 'Unf' : 'F' }}eature Comment</span></button>
-            @endif
-            @can('delete-comment', $comment)
-                <button data-toggle="modal" data-target="#delete-modal-{{ $comment->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-outline-danger text-uppercase"><i class="fas fa-minus-circle"></i><span
-                        class="ml-2 d-none d-sm-inline-block">Delete</span></button>
-            @endcan
-    @endif
-        </div>
-        <div class="col-auto text-right">
-            {{-- Likes Section --}}
-            <a href="#" data-toggle="modal" data-target="#show-likes-{{ $comment->id }}">
-                <button href="#" data-toggle="tooltip" title="Click to View" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-faded">
-                    {{ $comment->likes()->where('is_like', 1)->count() -$comment->likes()->where('is_like', 0)->count() }}
-                    {{ $comment->likes()->where('is_like', 1)->count() -$comment->likes()->where('is_like', 0)->count() !=1? 'Likes': 'Like' }}
-                </button>
-            </a>
-            {!! Form::open(['url' => 'comments/' . $comment->id . '/like/1', 'class' => 'd-inline-block']) !!}
-            {!! Form::button('<i class="fas fa-thumbs-up"></i>', [
+        @if (empty($read_only) || !$read_only)
+            <div class="col-auto">
+                @can('reply-to-comment', $comment)
+                    <button data-toggle="modal" data-target="#reply-modal-{{ $comment->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-faded text-uppercase"><i class="fas fa-comment"></i><span
+                            class="ml-2 d-none d-sm-inline-block">Reply</span></button>
+                @endcan
+                @can('edit-comment', $comment)
+                    <button data-toggle="modal" data-target="#comment-modal-{{ $comment->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-faded text-uppercase"><i class="fas fa-edit"></i><span
+                            class="ml-2 d-none d-sm-inline-block">Edit</span></button>
+                @endcan
+                @if (((Auth::user()->id == $comment->commentable_id && $comment->commentable_type == 'App\Models\User\UserProfile') || Auth::user()->isStaff) && (isset($compact) && !$compact))
+                    <button data-toggle="modal" data-target="#feature-modal-{{ $comment->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-faded text-success text-uppercase"><i class="fas fa-star"></i><span
+                            class="ml-2 d-none d-sm-inline-block">{{ $comment->is_featured ? 'Unf' : 'F' }}eature Comment</span></button>
+                @endif
+                @can('delete-comment', $comment)
+                    <button data-toggle="modal" data-target="#delete-modal-{{ $comment->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-outline-danger text-uppercase"><i class="fas fa-minus-circle"></i><span
+                            class="ml-2 d-none d-sm-inline-block">Delete</span></button>
+                @endcan
+        @endif
+    </div>
+    <div class="col-auto text-right">
+        {{-- Likes Section --}}
+        <a href="#" data-toggle="modal" data-target="#show-likes-{{ $comment->id }}">
+            <button href="#" data-toggle="tooltip" title="Click to View" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-faded">
+                {{ $comment->likes()->where('is_like', 1)->count() -$comment->likes()->where('is_like', 0)->count() }}
+                {{ $comment->likes()->where('is_like', 1)->count() -$comment->likes()->where('is_like', 0)->count() !=1? 'Likes': 'Like' }}
+            </button>
+        </a>
+        {!! Form::open(['url' => 'comments/' . $comment->id . '/like/1', 'class' => 'd-inline-block']) !!}
+        {!! Form::button('<i class="fas fa-thumbs-up"></i>', [
+            'type' => 'submit',
+            'class' =>
+                'btn btn-sm px-3 py-2 px-sm-2 py-sm-1 ' .
+                ($comment->likes()->where('user_id', Auth::user()->id)->where('is_like', 1)->exists()
+                    ? 'btn-success'
+                    : 'btn-outline-success') .
+                ' text-uppercase',
+        ]) !!}
+        {!! Form::close() !!}
+        @if (Settings::get('comment_dislikes_enabled') || (isset($allow_dislikes) && $allow_dislikes))
+            {!! Form::open(['url' => 'comments/' . $comment->id . '/like/0', 'class' => 'd-inline-block']) !!}
+            {!! Form::button('<i class="fas fa-thumbs-down"></i>', [
                 'type' => 'submit',
                 'class' =>
                     'btn btn-sm px-3 py-2 px-sm-2 py-sm-1 ' .
-                    ($comment->likes()->where('user_id', Auth::user()->id)->where('is_like', 1)->exists()
-                        ? 'btn-success'
-                        : 'btn-outline-success') .
+                    ($comment->likes()->where('user_id', Auth::user()->id)->where('is_like', 0)->exists()
+                        ? 'btn-danger'
+                        : 'btn-outline-danger') .
                     ' text-uppercase',
             ]) !!}
             {!! Form::close() !!}
-            @if (Settings::get('comment_dislikes_enabled') || (isset($allow_dislikes) && $allow_dislikes))
-                {!! Form::open(['url' => 'comments/' . $comment->id . '/like/0', 'class' => 'd-inline-block']) !!}
-                {!! Form::button('<i class="fas fa-thumbs-down"></i>', [
-                    'type' => 'submit',
-                    'class' =>
-                        'btn btn-sm px-3 py-2 px-sm-2 py-sm-1 ' .
-                        ($comment->likes()->where('user_id', Auth::user()->id)->where('is_like', 0)->exists()
-                            ? 'btn-danger'
-                            : 'btn-outline-danger') .
-                        ' text-uppercase',
-                ]) !!}
-                {!! Form::close() !!}
-            @endif
-        </div>
+        @endif
+    </div>
     </div>
 @endif
 

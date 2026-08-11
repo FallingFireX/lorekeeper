@@ -54,13 +54,27 @@
                     <strong class="text-success">Approving</strong> the request creates the update.
                 </div>
             </div>
-            <div class="card">
+            <div class="card mb-3">
                 <div class="card-body">
                     <a href="#" class="btn btn-outline-danger process-button btn-sm float-right" data-action="reject">Reject</a>
                     <strong class="text-danger">Rejecting</strong> the update returns any attached items and the user may not edit it any more.
                 </div>
             </div>
+            <div class="card">
+                <div class="card-body">
+                    <a href="#" class="btn btn-outline-warning process-button btn-sm float-right" data-action="hold">Hold for Review</a>
+                    <strong class="text-warning">Holding</strong> the update keeps the update in the queue but marks it for a specific admin or trainee.
+                </div>
+            </div>
         @endif
+    @elseif ($request->status == 'Hold')
+        <div class="alert alert-warning">
+            @if ($request->trainee)
+                This design update is held under trainee review for {!! $request->trainee->displayName !!}. It may take additional time to be processed.
+            @else
+                This design update has been put on hold by {!! $request->staff->displayName !!} for review. It may take additional time for our staff to review.
+            @endif
+        </div>
     @elseif($request->status == 'Approved')
         <p>This request has been approved. The data is preserved as a record of this submission.</p>
     @endif

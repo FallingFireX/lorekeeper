@@ -7,7 +7,8 @@
 @section('admin-content')
     {!! breadcrumbs(['Admin Panel' => 'admin', 'Team Index' => 'admin/team']) !!}
 
-    <h1>Team Index</h1>
+    <h1>
+        Team Index</h1>
 
     <p>Here you can see all teams youve created for your admins.</p>
 
@@ -41,19 +42,20 @@
                         </div>
                         <div class="col-12 col-md-3 ">
                             <div class="logs-table-cell">
-                                @if (!$team->apps_open) 
+                                @if (!$team->apps_open)
                                     Closed
                                 @else
-                                    open                            
-                                @endif</a></div>
+                                    open
+                                @endif
+                                </a>
+                            </div>
                         </div>
                         <div class="col-12 col-md-1">
-                                <div class="logs-table-cell"><a href="{{ url('admin/teams/edit/' . $team->id) }}" class="btn btn-primary py-0 px-1 w-100">Edit</a></div>
+                            <div class="logs-table-cell"><a href="{{ url('admin/teams/edit/' . $team->id) }}" class="btn btn-primary py-0 px-1 w-100">Edit</a></div>
                         </div>
                     </div>
                 </div>
             @endforeach
         </div>
     </div>
-    
 @endsection

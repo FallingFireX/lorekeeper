@@ -26,6 +26,9 @@
         <li class="nav-item">
             <a class="nav-link {{ set_active('admin/' . ($isClaims ? 'claims' : 'submissions') . '/rejected*') }}" href="{{ url('admin/' . ($isClaims ? 'claims' : 'submissions') . '/rejected') }}">Rejected</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {{ set_active('admin/' . ($isClaims ? 'claims' : 'submissions') . '/hold*') }}" href="{{ url('admin/' . ($isClaims ? 'claims' : 'submissions') . '/hold') }}"><i class="fas fa-hand-paper"></i> On Hold</a>
+        </li>
     </ul>
 
     {!! Form::open(['method' => 'GET', 'class' => 'form-inline justify-content-end']) !!}
@@ -37,6 +40,11 @@
         @endif
     </div>
     <div class="form-inline justify-content-end">
+        @if (isset($showTrainees) && $showTrainees)
+            <div class="form-group ml-3 mb-3">
+                {!! Form::select('trainee', $trainees, Request::get('trainee') ?: null, ['class' => 'form-control']) !!}
+            </div>
+        @endif
         <div class="form-group ml-3 mb-3">
             {!! Form::select(
                 'sort',
@@ -63,9 +71,18 @@
                         <div class="logs-table-cell">Prompt</div>
                     </div>
                 @endif
-                <div class="col-6 {{ !$isClaims ? 'col-md-2' : 'col-md-3' }}">
-                    <div class="logs-table-cell">User</div>
-                </div>
+                @if ($showTrainees)
+                    <div class="col-6 {{ !$isClaims ? 'col-md-1' : 'col-md-2' }}">
+                        <div class="logs-table-cell">User</div>
+                    </div>
+                    <div class="col-6 {{ !$isClaims ? 'col-md-2' : 'col-md-3' }}">
+                        <div class="logs-table-cell">Staff</div>
+                    </div>
+                @else
+                    <div class="col-6 {{ !$isClaims ? 'col-md-2' : 'col-md-3' }}">
+                        <div class="logs-table-cell">User</div>
+                    </div>
+                @endif
                 <div class="col-6 {{ !$isClaims ? 'col-md-3' : 'col-md-4' }}">
                     <div class="logs-table-cell">Link</div>
                 </div>
@@ -86,25 +103,59 @@
                                 <div class="logs-table-cell">{!! $submission->prompt->displayName !!}</div>
                             </div>
                         @endif
-                        <div class="col-6 {{ !$isClaims ? 'col-md-2' : 'col-md-3' }}">
-                            <div class="logs-table-cell">{!! $submission->user->displayName !!}</div>
-                        </div>
-                        <div class="col-6 {{ !$isClaims ? 'col-md-3' : 'col-md-4' }}">
-                            <div class="logs-table-cell">
-                                <span class="ubt-texthide"><a href="{{ $submission->url }}">{{ $submission->url }}</a></span>
+                        @if ($showTrainees)
+                            <div class="col-6 {{ !$isClaims ? 'col-md-1' : 'col-md-2' }}">
+                                <div class="logs-table-cell">
+                                    {!! $submission->user->displayName !!}
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="logs-table-cell">{!! pretty_date($submission->created_at) !!}</div>
-                        </div>
-                        <div class="col-3 col-md-1">
-                            <div class="logs-table-cell">
-                                <span class="btn btn-{{ $submission->status == 'Pending' ? 'secondary' : ($submission->status == 'Approved' ? 'success' : 'danger') }} btn-sm py-0 px-1">{{ $submission->status }}</span>
+                            <div class="col-6 {{ !$isClaims ? 'col-md-2' : 'col-md-3' }}">
+                                <div class="logs-table-cell">
+                                    @if ($submission->trainee)
+                                        {!! $submission->trainee->displayName !!} (Supervised by {!! $submission->staff->displayName !!})
+                                    @else
+                                        {!! $submission->staff->displayName !!}
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-3 col-md-1">
-                            <div class="logs-table-cell"><a href="{{ $submission->adminUrl }}" class="btn btn-primary btn-sm py-0 px-1">Details</a></div>
-                        </div>
+                            <div class="col-6 {{ !$isClaims ? 'col-md-2' : 'col-md-3' }}">
+                                <div class="logs-table-cell">
+                                    <span class="ubt-texthide"><a href="{{ $submission->url }}">{{ $submission->url }}</a></span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="logs-table-cell">{!! pretty_date($submission->created_at) !!}</div>
+                            </div>
+                            <div class="col-3 col-md-1">
+                                <div class="logs-table-cell">
+                                    <span
+                                        class="btn btn-{{ $submission->status == 'Pending' ? 'secondary' : ($submission->status == 'Approved' ? 'success' : 'danger') }} btn-sm py-0 px-1">{{ $submission->trainee ? 'Trainee Hold' : $submission->status }}</span>
+                                </div>
+                            </div>
+                            <div class="col-3 col-md-1">
+                                <div class="logs-table-cell"><a href="{{ $submission->adminUrl }}" class="btn btn-primary btn-sm py-0 px-1">Details</a></div>
+                            </div>
+                        @else
+                            <div class="col-6 {{ !$isClaims ? 'col-md-2' : 'col-md-3' }}">
+                                <div class="logs-table-cell">{!! $submission->user->displayName !!}</div>
+                            </div>
+                            <div class="col-6 {{ !$isClaims ? 'col-md-3' : 'col-md-4' }}">
+                                <div class="logs-table-cell">
+                                    <span class="ubt-texthide"><a href="{{ $submission->url }}">{{ $submission->url }}</a></span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="logs-table-cell">{!! pretty_date($submission->created_at) !!}</div>
+                            </div>
+                            <div class="col-3 col-md-1">
+                                <div class="logs-table-cell">
+                                    <span class="btn btn-{{ $submission->status == 'Pending' ? 'secondary' : ($submission->status == 'Approved' ? 'success' : 'danger') }} btn-sm py-0 px-1">{{ $submission->status }}</span>
+                                </div>
+                            </div>
+                            <div class="col-3 col-md-1">
+                                <div class="logs-table-cell"><a href="{{ $submission->adminUrl }}" class="btn btn-primary btn-sm py-0 px-1">Details</a></div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endforeach

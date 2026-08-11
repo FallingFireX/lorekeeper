@@ -207,6 +207,10 @@ return [
                 'name' => 'Items',
                 'url'  => 'admin/data/items',
             ],
+            [
+                'name' => 'Teams',
+                'url'  => 'admin/data/teams',
+            ],
         ],
     ],
     'Raffles'    => [

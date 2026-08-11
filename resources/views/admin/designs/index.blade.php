@@ -21,6 +21,9 @@
         <li class="nav-item">
             <a class="nav-link {{ set_active('admin/' . ($isMyo ? 'myo-approvals' : 'design-approvals') . '/rejected*') }}" href="{{ url('admin/' . ($isMyo ? 'myo-approvals' : 'design-approvals') . '/rejected') }}">Rejected</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {{ set_active('admin/' . ($isMyo ? 'myo-approvals' : 'design-approvals') . '/hold*') }}" href="{{ url('admin/' . ($isMyo ? 'myo-approvals' : 'design-approvals') . '/hold') }}"><i class="fas fa-hand-paper"></i> On Hold</a>
+        </li>
     </ul>
 
     <div>
@@ -37,6 +40,11 @@
                     ['class' => 'form-control'],
                 ) !!}
             </div>
+            @if (isset($showTrainees) && $showTrainees)
+                <div class="form-group ml-3 mb-3">
+                    {!! Form::select('trainee', $trainees, Request::get('trainee') ?: null, ['class' => 'form-control']) !!}
+                </div>
+            @endif
             <div class="form-group ml-3 mb-3">
                 {!! Form::submit('Search', ['class' => 'btn btn-primary']) !!}
             </div>
@@ -48,23 +56,46 @@
     <div class="mb-4 logs-table">
         <div class="logs-table-header">
             <div class="row">
-                <div class="col-md-3">
-                    <div class="logs-table-cell">{{ $isMyo ? 'MYO Slot' : 'Character' }}</div>
-                </div>
-                <div class="col-3 col-md-3">
-                    <div class="logs-table-cell">User</div>
-                </div>
-                <div class="col-2 col-md-2">
-                    <div class="logs-table-cell">Submitted</div>
-                </div>
-                @if (config('lorekeeper.extensions.design_update_voting'))
+                @if (isset($showTrainees) && $showTrainees)
+                    <div class="col-md-2">
+                        <div class="logs-table-cell">{{ $isMyo ? 'MYO Slot' : 'Character' }}</div>
+                    </div>
+                    <div class="col-3 col-md-1">
+                        <div class="logs-table-cell">User</div>
+                    </div>
+                    <div class="col-2 col-md-3">
+                        <div class="logs-table-cell">Staff</div>
+                    </div>
                     <div class="col-2 col-md-2">
-                        <div class="logs-table-cell">Votes</div>
+                        <div class="logs-table-cell">Submitted</div>
+                    </div>
+                    @if (config('lorekeeper.extensions.design_update_voting'))
+                        <div class="col-2 col-md-2">
+                            <div class="logs-table-cell">Votes</div>
+                        </div>
+                    @endif
+                    <div class="col-4 col-md-2">
+                        <div class="logs-table-cell">Status</div>
+                    </div>
+                @else
+                    <div class="col-md-3">
+                        <div class="logs-table-cell">{{ $isMyo ? 'MYO Slot' : 'Character' }}</div>
+                    </div>
+                    <div class="col-3 col-md-3">
+                        <div class="logs-table-cell">User</div>
+                    </div>
+                    <div class="col-2 col-md-2">
+                        <div class="logs-table-cell">Submitted</div>
+                    </div>
+                    @if (config('lorekeeper.extensions.design_update_voting'))
+                        <div class="col-2 col-md-2">
+                            <div class="logs-table-cell">Votes</div>
+                        </div>
+                    @endif
+                    <div class="col-4 col-md-2">
+                        <div class="logs-table-cell">Status</div>
                     </div>
                 @endif
-                <div class="col-4 col-md-2">
-                    <div class="logs-table-cell">Status</div>
-                </div>
             </div>
         </div>
         <div class="logs-table-body">
@@ -84,33 +115,73 @@
                         }
                         ?>
                     @endif
-                    <div class="row flex-wrap">
-                        <div class="col-md-3">
-                            <div class="logs-table-cell">{!! $r->character ? $r->character->displayName : 'Deleted Character [#' . $r->character_id . ']' !!}</div>
-                        </div>
-                        <div class="col-3 col-md-3">
-                            <div class="logs-table-cell">{!! $r->user->displayName !!}</div>
-                        </div>
-                        <div class="col-2 col-md-2">
-                            <div class="logs-table-cell">{!! $r->submitted_at ? pretty_date($r->submitted_at) : '---' !!}</div>
-                        </div>
-                        @if (config('lorekeeper.extensions.design_update_voting'))
-                            <div class="col-2 col-md-2">
+                    @if (isset($showTrainees) && $showTrainees)
+                        <div class="row flex-wrap">
+                            <div class="col-md-2">
+                                <div class="logs-table-cell">{!! $r->character ? $r->character->displayName : 'Deleted Character [#' . $r->character_id . ']' !!}</div>
+                            </div>
+                            <div class="col-3 col-md-1">
+                                <div class="logs-table-cell">{!! $r->user->displayName !!}</div>
+                            </div>
+                            <div class="col-3 col-md-3">
                                 <div class="logs-table-cell">
-                                    <strong>
-                                        <span class="text-danger">{{ $rejectSum }}/{{ Settings::get('design_votes_needed') }}</span> :
-                                        <span class="text-success">{{ $approveSum }}/{{ Settings::get('design_votes_needed') }}</span>
-                                    </strong>
+                                    @if ($showTrainees && $r->trainee)
+                                        {!! $r->trainee->displayName !!} (Supervised by {!! $r->staff->displayName !!})
+                                    @else
+                                        {!! $r->user->displayName !!}
+                                    @endif
                                 </div>
                             </div>
-                        @endif
-                        <div class="col-4 col-md-1">
-                            <div class="logs-table-cell"><span class="btn btn-{{ $r->status == 'Pending' ? 'secondary' : ($r->status == 'Approved' ? 'success' : 'danger') }} btn-sm py-0 px-1">{{ $r->status }}</span></div>
+                            <div class="col-2 col-md-2">
+                                <div class="logs-table-cell">{!! $r->submitted_at ? pretty_date($r->submitted_at) : '---' !!}</div>
+                            </div>
+                            @if (config('lorekeeper.extensions.design_update_voting'))
+                                <div class="col-2 col-md-2">
+                                    <div class="logs-table-cell">
+                                        <strong>
+                                            <span class="text-danger">{{ $rejectSum }}/{{ Settings::get('design_votes_needed') }}</span> :
+                                            <span class="text-success">{{ $approveSum }}/{{ Settings::get('design_votes_needed') }}</span>
+                                        </strong>
+                                    </div>
+                                </div>
+                            @endif
+                            <div class="col-4 col-md-1">
+                                <div class="logs-table-cell"><span class="btn btn-{{ $r->status == 'Pending' ? 'secondary' : ($r->status == 'Approved' ? 'success' : 'danger') }} btn-sm py-0 px-1">{{ $r->status }}</span></div>
+                            </div>
+                            <div class="col-4 col-md-1">
+                                <div class="logs-table-cell"><a href="{{ $r->url }}" class="btn btn-primary btn-sm">Details</a></div>
+                            </div>
                         </div>
-                        <div class="col-4 col-md-1">
-                            <div class="logs-table-cell"><a href="{{ $r->url }}" class="btn btn-primary btn-sm">Details</a></div>
+                    @else
+                        <div class="row flex-wrap">
+                            <div class="col-md-3">
+                                <div class="logs-table-cell">{!! $r->character ? $r->character->displayName : 'Deleted Character [#' . $r->character_id . ']' !!}</div>
+                            </div>
+                            <div class="col-3 col-md-3">
+                                <div class="logs-table-cell">{!! $r->user->displayName !!}</div>
+                            </div>
+
+                            <div class="col-2 col-md-2">
+                                <div class="logs-table-cell">{!! $r->submitted_at ? pretty_date($r->submitted_at) : '---' !!}</div>
+                            </div>
+                            @if (config('lorekeeper.extensions.design_update_voting'))
+                                <div class="col-2 col-md-2">
+                                    <div class="logs-table-cell">
+                                        <strong>
+                                            <span class="text-danger">{{ $rejectSum }}/{{ Settings::get('design_votes_needed') }}</span> :
+                                            <span class="text-success">{{ $approveSum }}/{{ Settings::get('design_votes_needed') }}</span>
+                                        </strong>
+                                    </div>
+                                </div>
+                            @endif
+                            <div class="col-4 col-md-1">
+                                <div class="logs-table-cell"><span class="btn btn-{{ $r->status == 'Pending' ? 'secondary' : ($r->status == 'Approved' ? 'success' : 'danger') }} btn-sm py-0 px-1">{{ $r->status }}</span></div>
+                            </div>
+                            <div class="col-4 col-md-1">
+                                <div class="logs-table-cell"><a href="{{ $r->url }}" class="btn btn-primary btn-sm">Details</a></div>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             @endforeach
         </div>

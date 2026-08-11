@@ -9,12 +9,12 @@ use App\Models\Character\CharacterImage;
 use App\Models\Character\Sublist;
 use App\Models\Feature\Feature;
 use App\Models\Rank\Rank;
-use App\Models\SitePage;
 use App\Models\Rarity;
+use App\Models\SitePage;
 use App\Models\Species\Species;
 use App\Models\Species\Subtype;
-use App\Models\User\User;
 use App\Models\Team;
+use App\Models\User\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -650,35 +650,35 @@ class BrowseController extends Controller {
     /**
      * Get all teams and their members.
      * Each member is sorted by priority of their role. members will only ever appear on the page ONCE
-     * unless they are on a leadership team. 
+     * unless they are on a leadership team.
      */
-    public function getTeamsIndex() { 
-        $users = User::with(['teams'])->get(); //Roles are sorted by priority with lead being highest, trainee being lowest. Null is assumed to be a "primary" member. 
-        $rolePriority = [ 'Lead' => 1, 'Primary' => 2, 'Secondary' => 3, 'Trainee' => 4, null => 2, // treat null as Primary 
-        ]; 
-        $entries = collect(); 
-        
-        //Get teams and team roles per staff member 
-        foreach ($users as $user) { 
-            foreach ($user->teams as $team) { 
-                $role = $team->pivot->type ?? 'Primary'; 
-                $entries->push((object)[ 
-                    'user' => $user, 
-                    'team' => $team, 
-                    'role' => $role, 
-                    'priority' => $rolePriority[$role] ?? 2, 
-                ]);
-                } 
-            }
+    public function getTeamsIndex() {
+        $users = User::with(['teams'])->get(); //Roles are sorted by priority with lead being highest, trainee being lowest. Null is assumed to be a "primary" member.
+        $rolePriority = ['Lead' => 1, 'Primary' => 2, 'Secondary' => 3, 'Trainee' => 4, null => 2, // treat null as Primary
+        ];
+        $entries = collect();
 
-        $leadership = $entries->filter(fn($user) => $user->team->type === 'Leadership');
+        //Get teams and team roles per staff member
+        foreach ($users as $user) {
+            foreach ($user->teams as $team) {
+                $role = $team->pivot->type ?? 'Primary';
+                $entries->push((object) [
+                    'user'     => $user,
+                    'team'     => $team,
+                    'role'     => $role,
+                    'priority' => $rolePriority[$role] ?? 2,
+                ]);
+            }
+        }
+
+        $leadership = $entries->filter(fn ($user) => $user->team->type === 'Leadership');
         $regular = $entries
-            ->reject(fn($user) => $user->team->type === 'Leadership')
+            ->reject(fn ($user) => $user->team->type === 'Leadership')
             ->groupBy('user.id')
             ->map(function ($userEntries) {
                 $sorted = $userEntries->sortBy('priority')->values();
-                $main = $sorted->first(); 
-                $main->otherRoles = $sorted->slice(1)->map(fn($role) => [
+                $main = $sorted->first();
+                $main->otherRoles = $sorted->slice(1)->map(fn ($role) => [
                     'team' => $role->team,
                     'role' => $role->role,
                 ]);
@@ -686,8 +686,8 @@ class BrowseController extends Controller {
                 return $main;
             });
 
-        $regularTeam    = $regular->groupBy(fn($user) => $user->team->id);
-        $leadershipTeam = $leadership->groupBy(fn($user) => $user->team->id);
+        $regularTeam = $regular->groupBy(fn ($user) => $user->team->id);
+        $leadershipTeam = $leadership->groupBy(fn ($user) => $user->team->id);
 
         return view('browse.teams', [
             'teams'      => $regularTeam,
@@ -696,16 +696,13 @@ class BrowseController extends Controller {
     }
 
     /**
-     * Shows the team info page
+     * Shows the team info page.
      */
-    public function getJoinTeam (){
+    public function getJoinTeam() {
         return view('browse.teams_info', [
             'application_intro' => SitePage::where('key', 'app-intro')->first(),
-            'teams' => Team::orderBy('id')->get(),
-            'relation' => Team::orderBy('id')->get(),
+            'teams'             => Team::orderBy('id')->get(),
+            'relation'          => Team::orderBy('id')->get(),
         ]);
     }
-
-    
-
 }

@@ -38,13 +38,26 @@
                 {!! format_date($submission->created_at) !!} ({{ $submission->created_at->diffForHumans() }})
             </div>
         </div>
-        @if ($submission->status != 'Pending' && $submission->status != 'Draft')
+        @if ($submission->status != 'Pending' && $submission->status != 'Draft' && $submission->status != 'Hold')
             <div class="row mb-2 no-gutters">
                 <div class="col-md-2">
                     <h5 class="mb-0">Processed</h5>
                 </div>
                 <div class="col-md-10">
                     {!! format_date($submission->updated_at) !!} ({{ $submission->updated_at->diffForHumans() }}) by {!! $submission->staff->displayName !!}
+                </div>
+            </div>
+        @elseif ($submission->status == 'Hold')
+            <div class="row mb-2 no-gutters">
+                <div class="col-md-2">
+                    <h5 class="mb-0"><i class="fas fa-hand-paper text-warning"></i> On Hold for Review</h5>
+                </div>
+                <div class="col-md-10">
+                    @if ($submission->trainee)
+                        {!! $submission->trainee->displayName !!} (Supervised by {!! $submission->staff->displayName !!})
+                    @else
+                        {!! $submission->user->displayName !!}
+                    @endif
                 </div>
             </div>
         @endif

@@ -18,7 +18,7 @@
     <h3>Basic Information</h3>
     <p>Create a new team below! Team types are as follows:
         <br><b>Main team</b>: This is your basic team that will fit most situations.
-        <br><b>Admin Accounts</b>: In the event you have group admin accounts in use on your site, you can create an admin account team to sort them. 
+        <br><b>Admin Accounts</b>: In the event you have group admin accounts in use on your site, you can create an admin account team to sort them.
         <br><b>Leadership</b>: This should be for your group development or leadership. This team will always show all members in the team page.
 
     <div class="row">
@@ -31,7 +31,7 @@
         <div class="col-md-6">
             <div class="form-group">
                 {!! Form::label('Type') !!}
-                {!! Form::select('type', ['Main Team' => 'Main Team','Admin Accounts' => 'Admin Accounts','Leadership' => 'Leadership'], $teams->type, ['class' => 'form-control','placeholder' => 'Select Team Type']) !!}
+                {!! Form::select('type', ['Main Team' => 'Main Team', 'Admin Accounts' => 'Admin Accounts', 'Leadership' => 'Leadership'], $teams->type, ['class' => 'form-control', 'placeholder' => 'Select Team Type']) !!}
             </div>
         </div>
     </div>
@@ -56,7 +56,6 @@
     </div>
 
     {!! Form::close() !!}
-
 @endsection
 
 @section('scripts')
@@ -69,5 +68,4 @@
             });
         });
     </script>
-
 @endsection
