@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Guilds;
 
 use App\Facades\Settings;
 use App\Http\Controllers\Controller;
+use App\Models\Character\Character;
 use App\Models\Currency\Currency;
 use App\Models\Guild\Guild;
 use App\Models\Guild\GuildCurrency;
@@ -14,7 +15,6 @@ use App\Models\Guild\GuildShopStock;
 use App\Models\Item\Item;
 use App\Models\Item\ItemCategory;
 use App\Models\User\User;
-use App\Models\Character\Character;
 use App\Models\User\UserCurrency;
 use App\Services\CurrencyManager;
 use App\Services\GuildManager;
@@ -477,7 +477,9 @@ class GuildController extends Controller {
     }
 
     /** --------------------------------------------------------------
-     * GUILD MEMBERS & CHARACTERS
+     * GUILD MEMBERS & CHARACTERS.
+     *
+     * @param mixed $id
      * -------------------------------------------------------------- */
 
     /**
@@ -540,12 +542,11 @@ class GuildController extends Controller {
      * Manages either users or characters in a guild using bulk actions.
      *
      * @param App\Services\GuildManager $service
-     * @param int|null                     $id
+     * @param int|null                  $id
      *
      * @return \Illuminate\Http\RedirectResponse
      */
     public function postEditManageMembers(Request $request, GuildManager $service, $id) {
-
         $guild = Guild::find($id);
         $manage_type = $request->only('manage-type')['manage-type'];
         $data = $request->only(['action', 'user_rank', 'character_rank', 'user_ids', 'character_ids']);
@@ -565,16 +566,16 @@ class GuildController extends Controller {
      * Adds members to the guild. Requires an array of user ids to be passed in the request.
      *
      * @param App\Services\GuildManager $service
-     * @param int|null                     $id
+     * @param int|null                  $id
+     * @param mixed                     $action
      *
      * @return \Illuminate\Http\RedirectResponse
      */
     public function postGuildInvitationAction(Request $request, GuildManager $service, $id = null, $action = 'reject') {
-
         $guild = Guild::find($id);
 
         if ($invited = $service->handleInvitation($guild, $action, Auth::user())) {
-            flash('Invitation ' . $action.'ed Succesfully.')->success();
+            flash('Invitation '.$action.'ed Succesfully.')->success();
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
@@ -588,7 +589,7 @@ class GuildController extends Controller {
      * Adds members to the guild. Requires an array of user ids to be passed in the request.
      *
      * @param App\Services\GuildManager $service
-     * @param int|null                     $id
+     * @param int|null                  $id
      *
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -600,7 +601,7 @@ class GuildController extends Controller {
         $guild = Guild::find($id);
 
         if ($invited = $service->addMembers($guild, $data, Auth::user())) {
-            flash('Invitations sent to: '. join(', ', $invited))->success();
+            flash('Invitations sent to: '.implode(', ', $invited))->success();
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
@@ -614,7 +615,7 @@ class GuildController extends Controller {
      * Removes members from the guild. Requires an array of user ids to be passed in the request.
      *
      * @param App\Services\GuildManager $service
-     * @param int|null                     $id
+     * @param int|null                  $id
      *
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -640,7 +641,7 @@ class GuildController extends Controller {
      * Adds characters to the guild. Requires an array of character ids to be passed in the request.
      *
      * @param App\Services\GuildManager $service
-     * @param int|null                     $id
+     * @param int|null                  $id
      *
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -666,7 +667,7 @@ class GuildController extends Controller {
      * Removes characters from the guild. Requires an array of character ids to be passed in the request.
      *
      * @param App\Services\GuildManager $service
-     * @param int|null                     $id
+     * @param int|null                  $id
      *
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -687,7 +688,6 @@ class GuildController extends Controller {
 
         return redirect()->back();
     }
-
 
     //Future TODO:
     /*

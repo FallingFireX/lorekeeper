@@ -4,7 +4,6 @@ namespace App\Models\Guild;
 
 use App\Models\Model;
 use App\Models\User\User;
-use App\Models\Guild\Guild;
 
 class GuildInvitation extends Model {
     /**
@@ -53,5 +52,4 @@ class GuildInvitation extends Model {
     public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }
-
 }

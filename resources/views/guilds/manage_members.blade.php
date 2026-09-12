@@ -33,112 +33,122 @@
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="user" role="tabpanel" aria-labelledby="user-tab">
             {!! Form::open(['url' => '/' . __('guilds.guilds') . '/' . $guild->id . '/manage-members', 'id' => 'guildSettingForm']) !!}
-                {!! Form::hidden('manage-type', 'users') !!}
+            {!! Form::hidden('manage-type', 'users') !!}
 
-                <div class="row action-bar mt-2">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            {!! Form::label('action', 'Bulk Action') !!}
-                            {!! Form::select('action', [
-                                'remove'        => 'Remove Members',
-                                'update_rank'   => 'Update Rank',
-                            ], null, ['class' => 'form-control', 'placeholder' => 'Select bulk action...']) !!}
-                        </div>
-                    </div>
-                    <div class="col-md-4 hide" data-type="update_rank">
-                        <div class="form-group">
-                            {!! Form::label('user_rank', 'Rank to Assign') !!}
-                            {!! Form::select('user_rank', $userRanks ?? [], null, ['class' => 'form-control', 'placeholder' => 'Select rank...']) !!}
-                        </div>
+            <div class="row action-bar mt-2">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        {!! Form::label('action', 'Bulk Action') !!}
+                        {!! Form::select(
+                            'action',
+                            [
+                                'remove' => 'Remove Members',
+                                'update_rank' => 'Update Rank',
+                            ],
+                            null,
+                            ['class' => 'form-control', 'placeholder' => 'Select bulk action...'],
+                        ) !!}
                     </div>
                 </div>
-    
-                @if ($guild->members)
-                    <table class="table">
-                        <thead>
+                <div class="col-md-4 hide" data-type="update_rank">
+                    <div class="form-group">
+                        {!! Form::label('user_rank', 'Rank to Assign') !!}
+                        {!! Form::select('user_rank', $userRanks ?? [], null, ['class' => 'form-control', 'placeholder' => 'Select rank...']) !!}
+                    </div>
+                </div>
+            </div>
+
+            @if ($guild->members)
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Select</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Permissions</th>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Reputation</th>
+                            <th scope="col">Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($guild->members as $member)
                             <tr>
-                                <th scope="col">Select</th>
-                                <th scope="col">User</th>
-                                <th scope="col">Permissions</th>
-                                <th scope="col">Rank</th>
-                                <th scope="col">Reputation</th>
-                                <th scope="col">Joined</th>
+                                <th scope="row">{!! Form::checkbox('user_ids[]', $member->user_id) !!}</th>
+                                <td>{!! $member->user->displayName !!}</td>
+                                <td>{{ $member->permissionsName }}</td>
+                                <td>{{ $member->rank->name ?? 'None' }}</td>
+                                <td>{{ $member->reputation }}</td>
+                                <td>{!! pretty_date($member->joined_at) !!}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($guild->members as $member)
-                                <tr>
-                                    <th scope="row">{!! Form::checkbox('user_ids[]', $member->user_id) !!}</th>
-                                    <td>{!! $member->user->displayName !!}</td>
-                                    <td>{{ $member->permissionsName }}</td>
-                                    <td>{{ $member->rank->name ?? 'None' }}</td>
-                                    <td>{{ $member->reputation }}</td>
-                                    <td>{!! pretty_date($member->joined_at) !!}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                    <p>No current guild members.</p>
-                @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <p>No current guild members.</p>
+            @endif
 
-                <div class="text-right mt-4">
-                    {!! Form::submit('Save Members', ['class' => 'btn btn-primary update-guild']) !!}
-                </div>
+            <div class="text-right mt-4">
+                {!! Form::submit('Save Members', ['class' => 'btn btn-primary update-guild']) !!}
+            </div>
             {!! Form::close() !!}
         </div>
         <div class="tab-pane fade" id="character" role="tabpanel" aria-labelledby="character-tab">
             {!! Form::open(['url' => '/' . __('guilds.guilds') . '/' . $guild->id . '/manage-members', 'id' => 'guildSettingForm']) !!}
-                {!! Form::hidden('manage-type', 'characters') !!}
+            {!! Form::hidden('manage-type', 'characters') !!}
 
-                <div class="row action-bar mt-2">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            {!! Form::label('action', 'Bulk Action') !!}
-                            {!! Form::select('action', [
-                                'remove'        => 'Remove Characters',
-                                'update_rank'   => 'Update Rank',
-                            ], null, ['class' => 'form-control', 'placeholder' => 'Select bulk action...']) !!}
-                        </div>
-                    </div>
-                    <div class="col-md-4 hide" data-type="update_rank">
-                        <div class="form-group">
-                            {!! Form::label('character_rank', 'Rank to Assign') !!}
-                            {!! Form::select('character_rank', $characterRanks ?? [], null, ['class' => 'form-control', 'placeholder' => 'Select rank...']) !!}
-                        </div>
+            <div class="row action-bar mt-2">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        {!! Form::label('action', 'Bulk Action') !!}
+                        {!! Form::select(
+                            'action',
+                            [
+                                'remove' => 'Remove Characters',
+                                'update_rank' => 'Update Rank',
+                            ],
+                            null,
+                            ['class' => 'form-control', 'placeholder' => 'Select bulk action...'],
+                        ) !!}
                     </div>
                 </div>
-    
-                @if ($guild->characters)
-                    <table class="table">
-                        <thead>
+                <div class="col-md-4 hide" data-type="update_rank">
+                    <div class="form-group">
+                        {!! Form::label('character_rank', 'Rank to Assign') !!}
+                        {!! Form::select('character_rank', $characterRanks ?? [], null, ['class' => 'form-control', 'placeholder' => 'Select rank...']) !!}
+                    </div>
+                </div>
+            </div>
+
+            @if ($guild->characters)
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Select</th>
+                            <th scope="col">Character</th>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Reputation</th>
+                            <th scope="col">Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($guild->characters as $character)
                             <tr>
-                                <th scope="col">Select</th>
-                                <th scope="col">Character</th>
-                                <th scope="col">Rank</th>
-                                <th scope="col">Reputation</th>
-                                <th scope="col">Joined</th>
+                                <th scope="row">{!! Form::checkbox('character_ids[]', $character->character_id) !!}</th>
+                                <td>{!! $character->character->displayName !!}</td>
+                                <td>{{ $character->rank->name ?? 'None' }}</td>
+                                <td>{{ $character->reputation }}</td>
+                                <td>{!! pretty_date($character->joined_at) !!}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($guild->characters as $character)
-                                <tr>
-                                    <th scope="row">{!! Form::checkbox('character_ids[]', $character->character_id) !!}</th>
-                                    <td>{!! $character->character->displayName !!}</td>
-                                    <td>{{ $character->rank->name ?? 'None' }}</td>
-                                    <td>{{ $character->reputation }}</td>
-                                    <td>{!! pretty_date($character->joined_at) !!}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                    <p>No current guild characters.</p>
-                @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <p>No current guild characters.</p>
+            @endif
 
-                <div class="text-right mt-4">
-                    {!! Form::submit('Save Characters', ['class' => 'btn btn-primary update-guild']) !!}
-                </div>
+            <div class="text-right mt-4">
+                {!! Form::submit('Save Characters', ['class' => 'btn btn-primary update-guild']) !!}
+            </div>
             {!! Form::close() !!}
         </div>
     </div>
@@ -159,14 +169,14 @@
 
             $('.add-members').on('click', function(e) {
                 e.preventDefault();
-                loadModal("{{ url( $guild->viewUrl ) }}/members/add", 'Invite Members');
+                loadModal("{{ url($guild->viewUrl) }}/members/add", 'Invite Members');
             });
 
             $('.add-characters').on('click', function(e) {
                 e.preventDefault();
-                loadModal("{{ url( $guild->viewUrl ) }}/characters/add", 'Add Characters');
+                loadModal("{{ url($guild->viewUrl) }}/characters/add", 'Add Characters');
             });
-            
+
         });
     </script>
 @endsection

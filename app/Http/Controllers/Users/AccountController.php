@@ -203,9 +203,8 @@ class AccountController extends Controller {
      * @return \Illuminate\Http\RedirectResponse
      */
     public function postGuildInvitations(Request $request, UserService $service) {
-
         $allow = $request->only(['allow_guild_invitations']) ? true : false;
-        
+
         if ($service->updateGuildInvitation($allow, Auth::user())) {
             flash('Invitation status updated!')->success();
         } else {

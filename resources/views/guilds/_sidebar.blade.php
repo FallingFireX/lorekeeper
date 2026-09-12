@@ -26,7 +26,7 @@
     @if ($guild->owner_id === Auth::user()->id)
         <li class="sidebar-section">
             <div class="sidebar-section-header">Admin</div>
-            <div class="sidebar-item"><a href="{{ $guild->editUrl }}" class="{{ set_active('*'.$guild->id.'/edit') }}">Settings</a></div>
+            <div class="sidebar-item"><a href="{{ $guild->editUrl }}" class="{{ set_active('*' . $guild->id . '/edit') }}">Settings</a></div>
             <div class="sidebar-item"><a href="{{ $guild->editRankUrl }}" class="{{ set_active('*edit-ranks') }}">Edit Ranks</a></div>
             <div class="sidebar-item"><a href="{{ $guild->viewUrl }}/manage-members" class="{{ set_active('*manage-members') }}">Manage Members</a></div>
             @if ($guild->shop)

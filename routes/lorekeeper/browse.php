@@ -226,7 +226,7 @@ Route::group(['prefix' => __('guilds.guilds'), 'namespace' => 'Guilds'], functio
             Route::get('/', 'GuildController@getGuildBank');
             Route::post('transfer', 'GuildController@postCurrencyTransfer');
         });
-        
+
         Route::group(['prefix' => 'members'], function () {
             Route::get('/', 'GuildController@getGuildMembers');
             Route::get('add', 'GuildController@getGuildAddMembersModal');

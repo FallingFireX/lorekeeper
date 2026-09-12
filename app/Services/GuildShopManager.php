@@ -9,8 +9,6 @@ use App\Models\Guild\GuildMember;
 use App\Models\Guild\GuildShop;
 use App\Models\Guild\GuildShopLog;
 use App\Models\Guild\GuildShopStock;
-use App\Services\InventoryManager;
-use App\Services\CurrencyManager;
 use Illuminate\Support\Facades\DB;
 
 class GuildShopManager extends Service {

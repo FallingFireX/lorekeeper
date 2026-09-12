@@ -9,14 +9,14 @@
 
     <h1>Guild Invitations</h1>
 
-    @if ( $invites && count($invites) > 0 )
+    @if ($invites && count($invites) > 0)
         <table class="table table-striped">
             <thead>
                 <tr>
-                <th scope="col">Guild</th>
-                <th scope="col">Created</th>
-                <th scope="col">Expires In</th>
-                <th class="text-right" scope="col">Actions</th>
+                    <th scope="col">Guild</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Expires In</th>
+                    <th class="text-right" scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,8 +27,8 @@
                         <td>{!! pretty_date($invite->expires_at) !!}</td>
                         <td class="text-right">
                             {!! Form::open(['url' => __('guilds.guilds') . '/' . $invite->guild->id . '/invite/']) !!}
-                                <a href="#" data-action="accept" class="btn action-btn btn-success">Accept</a>
-                                <a href="#" data-action="reject" class="btn action-btn btn-outline-danger">Reject</a>
+                            <a href="#" data-action="accept" class="btn action-btn btn-success">Accept</a>
+                            <a href="#" data-action="reject" class="btn action-btn btn-outline-danger">Reject</a>
                             {!! Form::close() !!}
                         </td>
                     </tr>
@@ -38,12 +38,12 @@
     @else
         <p>No pending invitations.</p>
     @endif
-    
+
 @endsection
 @section('scripts')
     <script>
         $(document).ready(function() {
-            
+
             $('.action-btn').click(function(e) {
                 e.preventDefault();
                 var action = $(this).data('action');

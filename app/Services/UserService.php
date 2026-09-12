@@ -198,8 +198,8 @@ class UserService extends Service {
     /**
      * Updates the user's guild invitation status.
      *
-     * @param array                 $data
      * @param \App\Models\User\User $user
+     * @param mixed                 $allow
      *
      * @return bool
      */
