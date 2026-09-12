@@ -59,7 +59,7 @@ class GuildController extends Controller {
                 $query->orderBy('name', 'DESC');
                 break;
             case 'reputation':
-                $query->orderBy('ranks.sort', 'DESC')->orderBy('name');
+                $query->orderBy('reputation', 'DESC')->orderBy('name');
                 break;
             case 'newest':
                 $query->orderBy('created_at', 'DESC');
