@@ -38,13 +38,13 @@
 
     <div class="row">
         {!! $guilds->render() !!}
-            @foreach ($guilds->chunk(1) as $chunk)
-                @foreach ($chunk as $guild)
-                    <div class="col-md-12">
-                        @include('guilds._guild_box', ['guild' => $guild])
-                    </div>
-                @endforeach
+        @foreach ($guilds->chunk(1) as $chunk)
+            @foreach ($chunk as $guild)
+                <div class="col-md-12">
+                    @include('guilds._guild_box', ['guild' => $guild])
+                </div>
             @endforeach
+        @endforeach
         {!! $guilds->render() !!}
     </div>
 
