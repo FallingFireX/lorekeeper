@@ -205,6 +205,8 @@ Route::group(['prefix' => __('guilds.guilds'), 'namespace' => 'Guilds'], functio
 
         Route::get('edit-ranks', 'GuildController@getGuildEditRanks');
         Route::post('edit-ranks', 'GuildController@postGuildEditRanks');
+        Route::get('manage-members', 'GuildController@getManageMembers');
+        Route::post('manage-members', 'GuildController@postEditManageMembers');
 
         Route::group(['prefix' => 'shop'], function () {
             Route::get('/', 'GuildController@getGuildShop');
@@ -217,21 +219,37 @@ Route::group(['prefix' => __('guilds.guilds'), 'namespace' => 'Guilds'], functio
             //Route::get('edit/stock', 'GuildController@getStockModal');
             Route::post('edit/stock', 'GuildController@postEditShopStock');
             Route::post('buy', 'GuildController@postBuy');
+            Route::get('{shopId}/{stockId}', 'GuildController@getShopStock')->where(['id' => '[0-9]+', 'stockId' => '[0-9]+']);
         });
 
-        Route::get('members', 'GuildController@getGuildMembers');
-        Route::get('characters', 'GuildController@getGuildCharacters');
+        Route::group(['prefix' => 'bank'], function () {
+            Route::get('/', 'GuildController@getGuildBank');
+            Route::post('transfer', 'GuildController@postCurrencyTransfer');
+        });
 
-        Route::get('inventory', 'GuildController@getGuildInventory');
-        Route::post('inventory/edit', 'InventoryController@postEdit');
+        Route::group(['prefix' => 'members'], function () {
+            Route::get('/', 'GuildController@getGuildMembers');
+            Route::get('add', 'GuildController@getGuildAddMembersModal');
+            Route::post('add', 'GuildController@postGuildAddMembers');
+            Route::post('remove', 'GuildController@postGuildRemoveMembers');
+        });
 
-        Route::get('bank', 'GuildController@getGuildBank');
-        Route::get(''.strtolower(__('guilds.playpen')), 'GuildController@getGuildPets');
+        Route::group(['prefix' => 'characters'], function () {
+            Route::get('/', 'GuildController@getGuildCharacters');
+            Route::get('add', 'GuildController@getGuildAddCharactersModal');
+            Route::post('add', 'GuildController@postGuildAddCharacters');
+            Route::post('remove', 'GuildController@postGuildRemoveCharacters');
+        });
+
+        Route::group(['prefix' => 'inventory'], function () {
+            Route::get('/', 'GuildController@getGuildInventory');
+            Route::post('edit', 'InventoryController@postEdit');
+        });
+
+        Route::get(strtolower(__('guilds.playpen')), 'GuildController@getGuildPets');
         Route::get('armory', 'GuildController@getGuildArmory');
 
         Route::post('disband', 'GuildController@postDisbandGuild');
+        Route::post('invite/{action}', 'GuildController@postGuildInvitationAction')->where('action', 'accept|reject');
     });
-
-    Route::post('{id}/bank/transfer', 'GuildController@postBuildBankTransfer');
-    Route::get('shops/{id}/{stockId}', 'GuildController@getShopStock')->where(['id' => '[0-9]+', 'stockId' => '[0-9]+']);
 });

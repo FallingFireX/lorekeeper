@@ -14,7 +14,7 @@
             <tr>
                 <th scope="row">{{ $i }}</th>
                 <td>{!! $member->user->displayName !!}</td>
-                <td>{!! $member->rank->displayName !!}</td>
+                <td>{!! $member->rank->displayName ?? 'None' !!}</td>
                 <td>{{ $member->reputation }}</td>
                 <td>{!! pretty_date($member->joined_at) !!}</td>
             </tr>

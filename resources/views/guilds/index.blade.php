@@ -37,16 +37,16 @@
     </div>
 
     <div class="row">
-        <div class="col-md col-md-12">
-
-            @if ($guilds)
-                @foreach ($guilds as $guild)
+        {!! $guilds->render() !!}
+        @foreach ($guilds->chunk(1) as $chunk)
+            @foreach ($chunk as $guild)
+                <div class="col-md-12">
                     @include('guilds._guild_box', ['guild' => $guild])
-                @endforeach
-            @else
-                <p>There are currently no guilds or there were no guilds that matched your results.</p>
-            @endif
-
-        </div>
+                </div>
+            @endforeach
+        @endforeach
+        {!! $guilds->render() !!}
     </div>
+
+    <div class="text-center mt-4 small text-muted">{{ $guilds->total() }} result{{ $guilds->total() == 1 ? '' : 's' }} found.</div>
 @endsection

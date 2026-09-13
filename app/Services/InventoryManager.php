@@ -360,9 +360,6 @@ class InventoryManager extends Service {
                     throw new \Exception('One of the selected items cannot be transferred.');
                 }
 
-                // Reject impossible direction pairs such as user->character or character->user.
-                // Only the guild route is treated as a generic mix-container here, while the user/character
-                // transfer routes remain the standard user/character controller flow.
                 $validDirections = [
                     ['Guild', 'User'],
                     ['Guild', 'Character'],
@@ -374,7 +371,6 @@ class InventoryManager extends Service {
                     throw new \Exception('This transfer direction is not supported.');
                 }
 
-                // Recipient character capacity checks, if target is a character.
                 if ($recipientType == 'Character') {
                     if (!$recipient->is_visible && !($user && $user->hasPower('edit_inventories'))) {
                         throw new \Exception('Invalid character selected.');
@@ -410,15 +406,12 @@ class InventoryManager extends Service {
                     throw new \Exception('You do not own one of the selected items.');
                 }
 
-                // Transfer log reason string.
                 $type = $senderType.' → '.$recipientType.' Transfer';
 
-                // Credit the intended target stack before reducing the source stack count.
                 if (!$this->creditItem($sender, $recipient, $type, $stack->data, $stack->item, $quantity)) {
                     throw new \Exception('Failed to credit the recipient stack.');
                 }
 
-                // Reduce the source stack.
                 switch ($senderType) {
                     case 'User':
                         $stack->count -= $quantity;

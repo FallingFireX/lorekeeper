@@ -34,14 +34,14 @@
         </div>
         <div class="form-group mr-3 mb-3">
             {!! Form::select(
-                'rank',
+                'permissions',
                 [
                     '' => 'All',
-                    'Owner' => 'Owner',
-                    'Mod' => 'Mod',
-                    'Member' => 'Member',
+                    2 => 'Owner',
+                    1 => 'Mod',
+                    0 => 'Member',
                 ],
-                Request::get('rank') ?: '',
+                Request::get('permissions') ?: '',
                 ['class' => 'form-control'],
             ) !!}
         </div>

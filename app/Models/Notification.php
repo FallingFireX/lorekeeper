@@ -168,4 +168,5 @@ class Notification extends Model {
     public const CHARACTER_JOIN_REQUEST_REJECTED = 1708;
     public const GUILD_CURRENCY_GRANT = 1800;
     public const GUILD_CURRENCY_REMOVAL = 1801;
+    public const GUILD_INVITATION = 1802;
 }

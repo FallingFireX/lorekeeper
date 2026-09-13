@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Guilds;
 
 use App\Facades\Settings;
 use App\Http\Controllers\Controller;
+use App\Models\Character\Character;
 use App\Models\Currency\Currency;
 use App\Models\Guild\Guild;
 use App\Models\Guild\GuildCurrency;
@@ -13,7 +14,9 @@ use App\Models\Guild\GuildShopLog;
 use App\Models\Guild\GuildShopStock;
 use App\Models\Item\Item;
 use App\Models\Item\ItemCategory;
+use App\Models\User\User;
 use App\Models\User\UserCurrency;
+use App\Services\CurrencyManager;
 use App\Services\GuildManager;
 use App\Services\GuildShopManager;
 use Auth;
@@ -56,7 +59,7 @@ class GuildController extends Controller {
                 $query->orderBy('name', 'DESC');
                 break;
             case 'reputation':
-                $query->orderBy('ranks.sort', 'DESC')->orderBy('name');
+                $query->orderBy('reputation', 'DESC')->orderBy('name');
                 break;
             case 'newest':
                 $query->orderBy('created_at', 'DESC');
@@ -222,8 +225,6 @@ class GuildController extends Controller {
             'user_ranks', 'character_ranks',
         ]);
 
-        \Log::info($data);
-
         if ($id && $service->updateGuildRanks(Guild::find($id), $data, Auth::user())) {
             flash('Guild ranks updated successfully.')->success();
         } elseif (!$id && $category = $service->updateGuildRanks($data, Auth::user())) {
@@ -254,11 +255,20 @@ class GuildController extends Controller {
             abort(404);
         }
 
+        $in_guild = GuildMember::where([
+            ['guild_id', $guild->id],
+            ['user_id', Auth::user()->id],
+        ])->exists();
+
         $categories = ItemCategory::visible(Auth::check() ? Auth::user() : null)->orderBy('sort', 'DESC')->get();
         $query = $shop->displayStock()->where(function ($query) use ($categories) {
             $query->whereIn('item_category_id', $categories->pluck('id')->toArray())
                 ->orWhereNull('item_category_id');
         });
+
+        if (!$in_guild) {
+            $query->where('is_guild_only', 0);
+        }
 
         $items = count($categories) ? $query->orderByRaw('FIELD(item_category_id,'.implode(',', $categories->pluck('id')->toArray()).')')
             ->orderBy('name')
@@ -338,31 +348,31 @@ class GuildController extends Controller {
     public function getGuildMembers(Request $request, $id) {
         $guild = Guild::where('id', $id)->first();
 
-        $query = $guild->members();
+        $query = $guild->members()->join('users', 'guild_users.user_id', '=', 'users.id')->select('guild_users.*');
         $sort = $request->only(['sort']);
-        $rank = $request->only(['rank']);
+        $permissions = $request->only(['permissions']);
 
-        // if ($request->get('name')) {
-        //     $query->join('users', 'guild_users.user_id', '=', 'users.id')
-        //         ->where('users.name', 'LIKE', '%'.$request->get('name').'%');
-        // }
+        if ($request->get('name')) {
+            $query->join('users', 'guild_users.user_id', '=', 'users.id')
+                ->where('users.name', 'LIKE', '%'.$request->get('name').'%');
+        }
 
-        // if ($rank !== '') {
-        //     $query->where('rank', $rank);
-        // }
+        if ($permissions !== '') {
+            $query->where('permissions', $permissions);
+        }
 
         switch ($sort['sort'] ?? null) {
             default:
                 $query->orderBy('joined_at', 'ASC');
                 break;
             case 'alpha':
-                $query->orderBy('name');
+                $query->orderBy('users.name');
                 break;
             case 'alpha-reverse':
-                $query->orderBy('name', 'DESC');
+                $query->orderBy('users.name', 'DESC');
                 break;
             case 'reputation':
-                //Do this one later to grab from the user's reputation (more advanced in case reputation is stored for multiple guilds)
+                $query->orderBy('reputation', 'DESC');
                 break;
             case 'newest':
                 $query->orderBy('joined_at', 'DESC');
@@ -446,22 +456,249 @@ class GuildController extends Controller {
     /**
      * Transfers currency between guild and user.
      *
+     * @param App\Services\CurrencyManager $service
+     * @param int|null                     $id
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postCurrencyTransfer(Request $request, CurrencyManager $service, $id = null) {
+        $data = $request->only([
+            'quantity', 'take_currency_id', 'give_currency_id',
+        ]);
+
+        $guild = Guild::find($id);
+
+        $action = $request->get('action');
+        $sender = ($action == 'take') ? $guild : Auth::user();
+        $recipient = ($action == 'take') ? Auth::user() : $guild;
+
+        if ($service->transferGuildCurrency($sender, $recipient, Currency::where(($action == 'take') ? 'allow_guild_to_user' : 'allow_user_to_guild', 1)->where('id', $request->get(($action == 'take') ? 'take_currency_id' : 'give_currency_id'))->first(), $request->get('quantity'))) {
+            flash('Currency transferred successfully.')->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    /** --------------------------------------------------------------
+     * GUILD MEMBERS & CHARACTERS.
+     *
+     * @param mixed $id
+     * -------------------------------------------------------------- */
+
+    /**
+     * Shows the modal to invite users to the guild.
+     *
+     * @param mixed $id
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getGuildAddMembersModal($id) {
+        $guild = Guild::where('id', $id)->first();
+
+        if (!$guild->getPermission()) {
+            abort(404);
+        }
+
+        $in_guild = $guild->members->pluck('user_id')->toArray();
+        $applicable_users = User::visible()->whereNotIn('id', $in_guild)->orderBy('name')->get()->pluck('verified_name', 'id')->toArray();
+
+        return view('guilds._invite_users_modal', [
+            'guild'     => $guild,
+            'users'     => $applicable_users,
+        ]);
+    }
+
+    /**
+     * Shows the modal to add characters to the guild.
+     *
+     * @param mixed $id
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getGuildAddCharactersModal($id) {
+        $guild = Guild::where('id', $id)->first();
+
+        if (!$guild->getPermission()) {
+            abort(404);
+        }
+
+        $in_guild = $guild->characters->pluck('character_id')->toArray();
+        $user_ids = $guild->members->pluck('user_id')->toArray();
+        $characters = Character::visible()->whereNotIn('id', $in_guild)->whereIn('user_id', $user_ids)->where('is_myo_slot', 0)->orderBy('name')->get()->pluck('fullName', 'id')->toArray();
+
+        return view('guilds._add_characters_modal', [
+            'guild'         => $guild,
+            'characters'    => $characters,
+        ]);
+    }
+
+    /**
+     * Shows the guild bank.
+     *
+     * @param mixed $id
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getManageMembers($id) {
+        $guild = Guild::where('id', $id)->first();
+
+        if (!$guild->getPermission()) {
+            abort(404);
+        }
+
+        return view('guilds.manage_members', [
+            'guild'                 => $guild,
+            'userRanks'             => $guild->ranks->where('for_user', 1)->pluck('name', 'id')->toArray(),
+            'characterRanks'        => $guild->ranks->where('for_character', 1)->pluck('name', 'id')->toArray(),
+        ]);
+    }
+
+    /**
+     * Manages either users or characters in a guild using bulk actions.
+     *
      * @param App\Services\GuildManager $service
      * @param int|null                  $id
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postBuildBankTransfer(Request $request, GuildManager $service, $id = null) {
+    public function postEditManageMembers(Request $request, GuildManager $service, $id) {
+        $guild = Guild::find($id);
+        $manage_type = $request->only('manage-type')['manage-type'];
+        $data = $request->only(['action', 'user_rank', 'character_rank', 'user_ids', 'character_ids']);
+
+        if ($invited = $service->manageMembers($guild, $manage_type, $data, Auth::user())) {
+            flash('Edited '.$manage_type.' successfully.')->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Adds members to the guild. Requires an array of user ids to be passed in the request.
+     *
+     * @param App\Services\GuildManager $service
+     * @param int|null                  $id
+     * @param mixed                     $action
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postGuildInvitationAction(Request $request, GuildManager $service, $id = null, $action = 'reject') {
+        $guild = Guild::find($id);
+
+        if ($invited = $service->handleInvitation($guild, $action, Auth::user())) {
+            flash('Invitation '.$action.'ed Succesfully.')->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Adds members to the guild. Requires an array of user ids to be passed in the request.
+     *
+     * @param App\Services\GuildManager $service
+     * @param int|null                  $id
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postGuildAddMembers(Request $request, GuildManager $service, $id = null) {
         $data = $request->only([
-            'quantity', 'take_currency_id', 'give_currency_id',
+            'users',
         ]);
 
-        if ($id && $service->updateGuildRanks(Guild::find($id), $data, Auth::user())) {
-            flash('Guild ranks updated successfully.')->success();
-        } elseif (!$id && $category = $service->updateGuildRanks($data, Auth::user())) {
-            flash('Guild ranks created successfully.')->success();
+        $guild = Guild::find($id);
 
-            return redirect()->to('guilds/view/'.$guild->id.'/bank');
+        if ($invited = $service->addMembers($guild, $data, Auth::user())) {
+            flash('Invitations sent to: '.implode(', ', $invited))->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Removes members from the guild. Requires an array of user ids to be passed in the request.
+     *
+     * @param App\Services\GuildManager $service
+     * @param int|null                  $id
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postGuildRemoveMembers(Request $request, GuildManager $service, $id = null) {
+        $data = $request->only([
+            'users',
+        ]);
+
+        $guild = Guild::find($id);
+
+        if ($service->removeMembers($guild, $data, Auth::user())) {
+            flash('Members successfully removed.')->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Adds characters to the guild. Requires an array of character ids to be passed in the request.
+     *
+     * @param App\Services\GuildManager $service
+     * @param int|null                  $id
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postGuildAddCharacters(Request $request, GuildManager $service, $id = null) {
+        $data = $request->only([
+            'characters',
+        ]);
+
+        $guild = Guild::find($id);
+
+        if ($service->addCharacters($guild, $data, Auth::user())) {
+            flash('Characters successfully added.')->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Removes characters from the guild. Requires an array of character ids to be passed in the request.
+     *
+     * @param App\Services\GuildManager $service
+     * @param int|null                  $id
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postGuildRemoveCharacters(Request $request, GuildManager $service, $id = null) {
+        $data = $request->only([
+            'characters',
+        ]);
+
+        $guild = Guild::find($id);
+
+        if ($service->removeCharacters($guild, $data, Auth::user())) {
+            flash('Characters successfully removed.')->success();
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
@@ -491,7 +728,7 @@ class GuildController extends Controller {
         $guild = Guild::where('id', $id)->first();
         $shop = $guild->shop ?? null;
 
-        if (!$guild) {
+        if (!$guild || !$guild->getPermission()) {
             abort(404);
         }
 
@@ -499,12 +736,25 @@ class GuildController extends Controller {
             return redirect('/guilds/view'.$guild->id.'/shop')->with('error', 'You do not have permission to edit this guild shop.');
         }
 
-        $guild_items = $guild->items()->get()->pluck('id')->toArray();
+        $guild_item_ids = $guild->items()->get()->pluck('id')->toArray();
+
+        $itemTotals = GuildItem::where('guild_id', $guild->id)
+            ->whereNull('deleted_at')
+            ->where('count', '>', 0)
+            ->selectRaw('item_id, SUM(count) AS total')
+            ->groupBy('item_id')
+            ->get()
+            ->keyBy('item_id')
+            ->mapWithKeys(function ($row) {
+                return [$row->item_id => (int) $row->total];
+            })
+            ->toArray();
 
         return view('guilds.shop_edit', [
             'guild'      => $guild,
             'shop'       => $shop ?? null,
-            'items'      => Item::whereIn('id', $guild_items)->orderBy('name')->pluck('name', 'id'),
+            'items'      => Item::whereIn('id', $guild_item_ids)->orderBy('name')->pluck('name', 'id'),
+            'item_maxes' => $itemTotals,
             'currencies' => Currency::orderBy('name')->where('is_guild_owned', 1)->pluck('name', 'id'),
         ]);
     }
@@ -545,10 +795,11 @@ class GuildController extends Controller {
      * @param App\Services\GuildShopManager $service
      * @param int                           $id
      * @param int                           $stockId
+     * @param mixed                         $shopId
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getShopStock(GuildShopManager $service, $id, $stockId) {
+    public function getShopStock(GuildShopManager $service, $id, $shopId, $stockId) {
         $shop = GuildShop::where('id', $id)->where('is_active', 1)->first();
         if (!$shop) {
             abort(404);

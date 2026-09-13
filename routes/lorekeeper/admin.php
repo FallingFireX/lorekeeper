@@ -481,4 +481,5 @@ Route::group(['prefix' => 'guilds', 'namespace' => 'Guilds', 'middleware' => 'po
     Route::post('edit/{id}', 'GuildController@postCreateEditGuild');
     Route::post('edit/{id}/{action}', 'GuildController@postGuild')->where('action', 'pending|approved|rejected');
     Route::post('{id}/grant-items', 'GrantController@postGuildItems');
+    Route::post('{id}/grant', 'GrantController@postGuildCurrency');
 });

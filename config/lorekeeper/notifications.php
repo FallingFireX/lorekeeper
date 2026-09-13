@@ -514,4 +514,11 @@ return [
         'message' => '{currency_quantity} {currency_name} was removed from {guild_name} by <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Bank</a>)',
         'url'     => 'guild/{guild_id}/bank',
     ],
+
+    // GUILD_INVITATION
+    1802   => [
+        'name'    => 'Guild Invitation',
+        'message' => 'You\'ve been invited to <a href="{guild_url}">{guild_name}</a> by <a href="{sender_url}">{sender_name}</a>!  (<a href="/account/invitations">View Invites</a>)',
+        'url'     => 'guild/{guild_id}/bank',
+    ],
 ];

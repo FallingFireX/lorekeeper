@@ -195,6 +195,9 @@
                             <a class="dropdown-item" href="{{ url('account/settings') }}">
                                 Settings
                             </a>
+                            <a class="dropdown-item" href="{{ url('account/invitations') }}">
+                                Invitations
+                            </a>
                             <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
                                                 document.getElementById('logout-form').submit();">
                                 {{ __('Logout') }}

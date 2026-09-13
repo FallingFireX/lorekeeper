@@ -11,6 +11,8 @@ use App\Models\Currency\CurrencyLog;
 use App\Models\Gallery\GalleryCollaborator;
 use App\Models\Gallery\GalleryFavorite;
 use App\Models\Gallery\GallerySubmission;
+use App\Models\Guild\Guild;
+use App\Models\Guild\GuildInvitation;
 use App\Models\Item\Item;
 use App\Models\Item\ItemLog;
 use App\Models\Notification;
@@ -204,6 +206,20 @@ class User extends Authenticatable implements MustVerifyEmail {
      */
     public function commentLikes() {
         return $this->hasMany(CommentLike::class);
+    }
+
+    /**
+     * Gets all of a user's guilds.
+     */
+    public function guilds() {
+        return $this->hasMany(Guild::class);
+    }
+
+    /**
+     * Gets all of a user's guilds.
+     */
+    public function guildInvites() {
+        return $this->hasMany(GuildInvitation::class);
     }
 
     /**********************************************************************************************

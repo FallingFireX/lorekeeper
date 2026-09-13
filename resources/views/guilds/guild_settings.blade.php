@@ -23,7 +23,7 @@
         @endif
     </div>
 
-    {!! Form::open(['url' => '/guilds/' . $guild->id . '/edit', 'id' => 'guildSettingForm', 'files' => true]) !!}
+    {!! Form::open(['url' => '/' . __('guilds.guilds') . '/' . $guild->id . '/edit', 'id' => 'guildSettingForm', 'files' => true]) !!}
 
     <div class="form-group">
         {!! Form::label('name', 'Name') !!}
@@ -145,7 +145,7 @@
     <div class="card mt-4">
         <h3 class="card-header">Guild Moderators</h3>
         <div class="card-body">
-            {!! Form::open(['url' => '/guilds/' . $guild->id . '/edit/staff', 'id' => 'guildSettingForm']) !!}
+            {!! Form::open(['url' => '/' . __('guilds.guilds') . '/' . $guild->id . '/edit/staff', 'id' => 'guildSettingForm']) !!}
 
             <div class="row">
                 <div class="col-md-3">
@@ -178,7 +178,7 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-                    {!! Form::open(['url' => '/guilds/' . $guild->id . '/disband']) !!}
+                    {!! Form::open(['url' => '/' . __('guilds.guilds') . '/' . $guild->id . '/disband']) !!}
                     <p>This will disband the {{ __('guilds.guild') }} and remove all members and characters. This action cannot be undone.</p>
                     <div class="text-right">
                         {!! Form::submit('Disband Guild', ['class' => 'btn btn-danger', 'id' => 'disbandSubmit']) !!}

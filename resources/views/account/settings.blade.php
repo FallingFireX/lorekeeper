@@ -136,6 +136,24 @@
     </div>
 
     <div class="card p-3 mb-2">
+        <h3>{{ __('guilds.guild') }} Invitations</h3>
+        <p>{{ ucfirst(__('guilds.guild')) }} staff will be able to send you invites freely. If you would like to not receive these invites ensure this option is off. This will not prevent you from applying to {{ __('guilds.guilds') }}.</p>
+        {!! Form::open(['url' => 'account/guild-invitations']) !!}
+        <div class="form-group row">
+            <div class="col-md-12">
+                <div>
+                    {!! Form::checkbox('allow_guild_invitations', 1, Auth::user()->settings->allow_guild_invitations, ['class' => 'form-check-input', 'data-toggle' => 'toggle', 'data-on' => 'Allow', 'data-off' => 'Disallow']) !!}
+                    {!! Form::label('allow_guild_invitations', 'I will receive invitations.', ['class' => 'form-check-label ml-3']) !!} {!! add_help('This will allow users to send you invitations to ' . __('guilds.guilds') . '.') !!}
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            {!! Form::submit('Edit', ['class' => 'btn btn-primary']) !!}
+        </div>
+        {!! Form::close() !!}
+    </div>
+
+    <div class="card p-3 mb-2">
         <h3>Two-Factor Authentication</h3>
 
         <p>Two-factor authentication acts as a second layer of protection for your account. It uses an app on your phone-- such as Google Authenticator-- and information provided by the site to generate a random code that changes frequently.</p>

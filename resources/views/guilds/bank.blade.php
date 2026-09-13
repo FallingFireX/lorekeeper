@@ -59,7 +59,7 @@
         <h3>
             Take/Give Currency
         </h3>
-        {!! Form::open(['url' => 'guilds/' . $guild->id . '/bank/transfer']) !!}
+        {!! Form::open(['url' => __('guilds.guilds') . '/' . $guild->id . '/bank/transfer']) !!}
         <div class="form-group">
             <div class="row">
                 <div class="col-md-6">
@@ -101,7 +101,7 @@
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
                     <div class="modal-body">
-                        {!! Form::open(['url' => 'admin/guild/' . $guild->id . '/grant']) !!}
+                        {!! Form::open(['url' => 'admin/guilds/' . $guild->id . '/grant']) !!}
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -131,4 +131,19 @@
         </div>
     @endif
 
+@endsection
+@section('scripts')
+    @parent
+    <script>
+        $(document).ready(function() {
+            $('.take-button').on('click', function() {
+                $('.take').removeClass('hide');
+                $('.give').addClass('hide');
+            })
+            $('.give-button').on('click', function() {
+                $('.give').removeClass('hide');
+                $('.take').addClass('hide');
+            })
+        });
+    </script>
 @endsection

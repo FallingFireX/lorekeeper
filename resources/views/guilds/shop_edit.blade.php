@@ -17,7 +17,7 @@
         @endif
     </h1>
 
-    {!! Form::open(['url' => 'guilds/' . $guild->id . '/shop/' . ($shop ? 'edit' : 'create'), 'files' => true]) !!}
+    {!! Form::open(['url' => __('guilds.guilds') . '/' . $guild->id . '/shop/' . ($shop ? 'edit' : 'create'), 'files' => true]) !!}
 
     <h3>Basic Information</h3>
 
@@ -61,13 +61,13 @@
         <div class="card">
             <h3 class="card-header">Shop Stock</h3>
             <div class="card-body">
-                {!! Form::open(['url' => '/guilds/' . $guild->id . '/shop/edit/stock/']) !!}
+                {!! Form::open(['url' => '/' . __('guilds.guilds') . '/' . $guild->id . '/shop/edit/stock/']) !!}
                 <div class="text-right mb-3">
                     <a href="#" class="add-stock-button btn btn-outline-primary">Add Stock</a>
                 </div>
                 <div id="shopStock">
                     @foreach ($shop->stock as $key => $stock)
-                        @include('guilds._stock', ['stock' => $stock, 'key' => $key])
+                        @include('guilds._stock', ['stock' => $stock, 'key' => $key, 'itemCounts' => $item_maxes])
                     @endforeach
                 </div>
                 <div class="text-right">
@@ -87,6 +87,7 @@
         $(document).ready(function() {
             var $shopStock = $('#shopStock');
             var $stock = $('#shopStockData').find('.stock');
+            var itemCounts = @json($item_maxes);
 
             $('#shopStock .selectize').selectize();
 
@@ -104,6 +105,16 @@
                 refreshStockFieldNames();
 
                 clone.find('.selectize').selectize();
+            });
+            $('#shopStock').on('change', '.item-select', function() {
+                console.log('item changed!');
+                var item_id = $(this).val();
+                var $container = $(this).closest('.stock');
+
+                var max = itemCounts[item_id] ?? 1;
+
+                $container.find('.quantity').attr('max', max);
+                $container.find('.qty-wrapper small').text('Currently in Inventory: ' + max).removeClass('hide');
             });
 
             attachStockListeners($('#shopStock .stock'));

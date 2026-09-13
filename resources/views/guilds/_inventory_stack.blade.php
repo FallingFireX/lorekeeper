@@ -11,7 +11,7 @@
         <p class="alert alert-warning my-2">Note: Your rank allows you to transfer guild-bound items.</p>
     @endif
 
-    {!! Form::open(['url' => 'guilds/' . $guild->id . '/inventory/edit']) !!}
+    {!! Form::open(['url' => __('guilds.guilds') . '/' . $guild->id . '/inventory/edit']) !!}
     <div class="card" style="border: 0px">
         <table class="table table-sm">
             <thead class="thead">

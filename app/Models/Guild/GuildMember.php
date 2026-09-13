@@ -67,6 +67,18 @@ class GuildMember extends Model {
 
     **********************************************************************************************/
 
+    public function getPermissionsNameAttribute() {
+        switch ($this->permissions) {
+            case 2:
+                return 'Owner';
+            case 1:
+                return 'Moderator';
+            case 0:
+            default:
+                return 'Member';
+        }
+    }
+
     /**********************************************************************************************
 
         OTHER FUNCTIONS

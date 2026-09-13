@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     /**
-     * Run the migrations.//MIGRATED TO BASE.
+     * Run the migrations.
      */
     public function up(): void {
-        Schema::table('guild_shop_stock', function (Blueprint $table) {
-            $table->text('data')->nullable()->change();
+        Schema::table('user_settings', function (Blueprint $table) {
+            $table->boolean('allow_guild_invitations')->default(1);
         });
     }
 
@@ -18,8 +18,8 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::table('guild_shop_stock', function (Blueprint $table) {
-            //
+        Schema::table('user_settings', function (Blueprint $table) {
+            $table->dropColumn('allow_guild_invitations');
         });
     }
 };

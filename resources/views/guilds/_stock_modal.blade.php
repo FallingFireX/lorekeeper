@@ -5,6 +5,9 @@
         <div class="mb-1"><a href="{{ $stock->item->idUrl }}"><img class="img-fluid" src="{{ $stock->item->imageUrl }}" alt="{{ $stock->item->name }}" /></a></div>
         <div><a href="{{ $stock->item->idUrl }}"><strong>{{ $stock->item->name }}</strong></a></div>
         <div><strong>Cost: </strong> {!! $stock->currency->display($stock->cost) !!}</div>
+        @if ($stock->guild_cost !== $stock->cost)
+            <div><strong>Guild Cost: </strong> {!! $stock->currency->display($stock->guild_cost) !!}</div>
+        @endif
         @if ($stock->is_limited_stock)
             <div>Stock: {{ $stock->quantity }}</div>
         @endif
@@ -39,7 +42,7 @@
             @if ($stock->purchase_limit)
                 <div class="alert alert-warning mb-3">You have purchased this item {{ $userPurchaseCount }} times.</div>
             @endif
-            {!! Form::open(['url' => 'guilds/' . $guild->id . '/shop/buy']) !!}
+            {!! Form::open(['url' => __('guilds.guilds') . '/' . $guild->id . '/shop/buy']) !!}
             {!! Form::hidden('guild_shop_id', $shop->id) !!}
             {!! Form::hidden('stock_id', $stock->id) !!}
             {!! Form::label('quantity', 'Quantity') !!}

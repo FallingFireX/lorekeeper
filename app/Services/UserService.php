@@ -196,6 +196,29 @@ class UserService extends Service {
     }
 
     /**
+     * Updates the user's guild invitation status.
+     *
+     * @param \App\Models\User\User $user
+     * @param mixed                 $allow
+     *
+     * @return bool
+     */
+    public function updateGuildInvitation($allow, $user) {
+        DB::beginTransaction();
+
+        try {
+            $user->settings->allow_guild_invitations = $allow;
+            $user->settings->save();
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+
+        return $this->rollbackReturn(false);
+    }
+
+    /**
      * Updates user's birthday setting.
      *
      * @param mixed $data

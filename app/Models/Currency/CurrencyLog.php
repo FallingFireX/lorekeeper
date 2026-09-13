@@ -50,6 +50,8 @@ class CurrencyLog extends Model {
                 return $this->belongsTo(Character::class, 'sender_id');
             case 'Guild':
                 return $this->belongsTo(Guild::class, 'sender_id');
+            default:
+                return $this->belongsTo(User::class, 'sender_id');
         }
     }
 
@@ -57,13 +59,15 @@ class CurrencyLog extends Model {
      * Get the user who received the logged action.
      */
     public function recipient() {
-        switch ($this->sender_type) {
+        switch ($this->recipient_type) {
             case 'User':
-                return $this->belongsTo(User::class, 'sender_id');
+                return $this->belongsTo(User::class, 'recipient_id');
             case 'Character':
-                return $this->belongsTo(Character::class, 'sender_id');
+                return $this->belongsTo(Character::class, 'recipient_id');
             case 'Guild':
-                return $this->belongsTo(Guild::class, 'sender_id');
+                return $this->belongsTo(Guild::class, 'recipient_id');
+            default:
+                return $this->belongsTo(User::class, 'recipient_id');
         }
     }
 

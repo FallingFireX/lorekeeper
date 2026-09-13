@@ -14,7 +14,7 @@
     <h1>Edit {{ $guild->name }}'s Ranks</h1>
     <p>Edit your {{ __('guilds.guild') }} below. Only {{ __('guilds.guild') }} owners and mods may edit the guild. Staff may edit your guild as well.</p>
 
-    {!! Form::open(['url' => '/guilds/' . $guild->id . '/edit-ranks', 'id' => 'guildSettingForm', 'files' => true]) !!}
+    {!! Form::open(['url' => '/' . __('guilds.guilds') . '/' . $guild->id . '/edit-ranks', 'id' => 'guildSettingForm', 'files' => true]) !!}
 
     <div class="ranks">
         <div class="card mb-4">

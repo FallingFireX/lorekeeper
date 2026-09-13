@@ -7,6 +7,7 @@ use App\Models\Character\CharacterCurrency;
 use App\Models\Currency\Currency;
 use App\Models\Guild\Guild;
 use App\Models\Guild\GuildCurrency;
+use App\Models\Guild\GuildMember;
 use App\Models\User\User;
 use App\Models\User\UserCurrency;
 use Carbon\Carbon;
@@ -188,7 +189,7 @@ class CurrencyManager extends Service {
                 $this->debitCurrency($guild, $staff, 'Staff Removal', $data['data'], $currency, -$data['quantity']);
                 if (isset($guild->user)) {
                     Notifications::create('GUILD_CURRENCY_REMOVAL', $guild->user, [
-                        'currency_name'     => $currency->name,
+                        'currency_name'     => $currency->owner(),
                         'currency_quantity' => -$data['quantity'],
                         'sender_url'        => $staff->url,
                         'sender_name'       => $staff->name,
@@ -199,7 +200,7 @@ class CurrencyManager extends Service {
             } else {
                 $this->creditCurrency($staff, $guild, 'Staff Grant', $data['data'], $currency, $data['quantity']);
                 if (isset($guild->user)) {
-                    Notifications::create('GUILD_CURRENCY_GRANT', $guild->user, [
+                    Notifications::create('GUILD_CURRENCY_GRANT', $guild->owner(), [
                         'currency_name'     => $currency->name,
                         'currency_quantity' => $data['quantity'],
                         'sender_url'        => $staff->url,
@@ -258,6 +259,95 @@ class CurrencyManager extends Service {
                     'sender_url'        => $sender->url,
                     'sender_name'       => $sender->name,
                 ]);
+
+                return $this->commitReturn(true);
+            }
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * Transfers currency between a user and guild.
+     *
+     * @param \App\Models\Character\Character|\App\Models\User\User $sender
+     * @param \App\Models\Character\Character|\App\Models\User\User $recipient
+     * @param \App\Models\Currency\Currency                         $currency
+     * @param int                                                   $quantity
+     *
+     * @return bool
+     */
+    public function transferGuildCurrency($sender, $recipient, $currency, $quantity) {
+        DB::beginTransaction();
+
+        try {
+            if (!$recipient) {
+                throw new \Exception('Invalid recipient selected.');
+            }
+            if (!$sender) {
+                throw new \Exception('Invalid sender selected.');
+            }
+            if ($recipient->logType == 'Guild' && $sender->logType == 'Guild') {
+                throw new \Exception('Cannot transfer currencies between guilds.');
+            }
+            if (!$currency) {
+                throw new \Exception('Invalid currency selected.');
+            }
+            if ($quantity <= 0) {
+                throw new \Exception('Invalid quantity entered.');
+            }
+
+            $guild = null;
+            $user = null;
+
+            if ($sender instanceof Guild) {
+                $guild = $sender;
+                $user = $recipient;
+            } elseif ($recipient instanceof Guild) {
+                $guild = $recipient;
+                $user = $sender;
+            }
+
+            if (!$guild || !$user || !($user instanceof User)) {
+                throw new \Exception('Invalid guild transfer selected.');
+            }
+
+            $in_guild = GuildMember::where([
+                ['guild_id', $guild->id],
+                ['user_id', $user->id],
+            ])->exists();
+
+            if (!$in_guild) {
+                throw new \Exception('Only guild members may withdraw currency.');
+            }
+
+            // Determine log type
+            $log_types = [
+                'Sender'    => $sender->logType,
+                'Recipient' => $recipient->logType,
+            ];
+
+            foreach ($log_types as $key => $type) {
+                switch ($type) {
+                    case 'User':
+                        $reg = 'User';
+                        break;
+                    case 'Guild':
+                        $reg = 'Guild';
+                        break;
+                    case 'Character':
+                        $reg = 'Character';
+                        break;
+                }
+                $log_types[$key] = $reg;
+            }
+            $log_type = ($log_types['Sender'] ?? 'Unknown').' → '.($log_types['Recipient'] ?? 'Unknown').' Transfer';
+
+            if ($this->debitCurrency($sender, $recipient, null, null, $currency, $quantity) &&
+            $this->creditCurrency($sender, $recipient, null, null, $currency, $quantity)) {
+                $this->createLog($sender->id, $sender->logType, $recipient->id, $recipient->logType, $log_type, null, $currency->id, $quantity);
 
                 return $this->commitReturn(true);
             }

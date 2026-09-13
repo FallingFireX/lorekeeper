@@ -7,6 +7,7 @@ use App\Models\Currency\CurrencyLog;
 use App\Models\Item\Item;
 use App\Models\Model;
 use App\Models\User\User;
+use Auth;
 use Carbon\Carbon;
 
 class Guild extends Model {
@@ -265,6 +266,15 @@ class Guild extends Model {
     }
 
     /**
+     * Get the linked display name of the guild.
+     *
+     * @return string
+     */
+    public function getDisplayNameAttribute() {
+        return '<a class="font-weight-bold text-primary" href="'.url(__('guilds.guilds').'/'.$this->id).'">'.$this->name.'</a>';
+    }
+
+    /**
      * Get the viewing URL of the guild.
      *
      * @return string
@@ -389,5 +399,45 @@ class Guild extends Model {
      */
     public function getLogTypeAttribute() {
         return 'Guild';
+    }
+
+    /**
+     * Get the URL to accept guild Invitation.
+     *
+     * @return string
+     */
+    public function getInviteAcceptAttribute() {
+        return url(__('guilds.guilds').'/'.$this->id.'/invite/accept');
+    }
+
+    /**
+     * Get the URL to reject guild Invitation.
+     *
+     * @return string
+     */
+    public function getInviteRejectAttribute() {
+        return url(__('guilds.guilds').'/'.$this->id.'/invite/reject');
+    }
+
+    /**********************************************************************************************
+
+        OTHER FUNCTIONS
+
+    **********************************************************************************************/
+
+    public function getPermission() {
+        if (Auth::user()->isStaff || Auth::user()->id === $this->owner_id) {
+            return true;
+        }
+
+        if (GuildMember::where([
+            ['user_id', Auth::user()->id],
+            ['guild_id', $this->id],
+            ['permissions', '>', 0],
+        ])->exists()) {
+            return true;
+        }
+
+        return false;
     }
 }

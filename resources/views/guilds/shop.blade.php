@@ -72,7 +72,7 @@
                     </div>
                 @endforeach
             </div>
-        </div>
+        </div>,.
     @endforeach
 @endsection
 @section('scripts')
@@ -80,8 +80,7 @@
         $(document).ready(function() {
             $('.inventory-item').on('click', function(e) {
                 e.preventDefault();
-                console.log("{{ url('guilds/shops/' . $shop->id) }}/" + $(this).data('id'));
-                loadModal("{{ url('guilds/shops/' . $shop->id) }}/" + $(this).data('id'), 'Purchase Item');
+                loadModal("{{ url(__('guilds.guilds') . '/' . $guild->id . '/shop/' . $shop->id) }}/" + $(this).data('id'), 'Purchase Item');
             });
         });
     </script>

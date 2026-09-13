@@ -194,18 +194,18 @@ class GuildShopManager extends Service {
 
     public function getStockPurchaseLimit($shopStock, $user) {
         $limit = config('lorekeeper.settings.default_purchase_limit');
-        if ($shopStock->purchase_limit > 0) {
-            $user_purchase_limit = $shopStock->purchase_limit - $this->checkUserPurchases($shopStock, $user);
-            if ($user_purchase_limit < $limit) {
-                $limit = $user_purchase_limit;
-            }
-        }
-        if ($shopStock->is_limited_stock) {
-            if ($shopStock->quantity < $limit) {
-                $limit = $shopStock->quantity;
-            }
-        }
+        // if ($shopStock->purchase_limit > 0) {
+        //     $user_purchase_limit = $shopStock->purchase_limit - $this->checkUserPurchases($shopStock, $user);
+        //     if ($user_purchase_limit < $limit) {
+        //         $limit = $user_purchase_limit;
+        //     }
+        // }
+        // if ($shopStock->is_limited_stock) {
+        //     if ($shopStock->quantity < $limit) {
+        //         $limit = $shopStock->quantity;
+        //     }
+        // }
 
-        return $limit;
+        return $shopStock->quantity;
     }
 }

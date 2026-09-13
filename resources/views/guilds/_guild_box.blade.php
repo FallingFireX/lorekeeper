@@ -13,12 +13,12 @@
                     <h2><a href="{{ $guild->viewUrl }}">{{ $guild->name }}</a></h2>
 
                     <div>
-                        @if ($guild->status === 'active')
+                        @if ($guild->status === 'active' && !$guild->is_disbanded)
                             <span class="h6 p-1 rounded bg-success text-white">Active</span>
+                            <span class="h6 p-1 rounded border ml-2 {{ $guild->open_new_users ? 'border-success text-success' : 'border-danger text-danger' }}">{{ $guild->open_new_users ? 'Open Applications' : 'Closed Applications' }}</span>
                         @else
-                            <span class="h6 p-1 rounded bg-secondary text-white">Inactive</span>
+                            <span class="h6 p-1 rounded bg-danger text-white">Disbanded</span>
                         @endif
-                        <span class="h6 p-1 rounded border ml-2 {{ $guild->open_new_users ? 'border-success text-success' : 'border-danger text-danger' }}">{{ $guild->open_new_users ? 'Open Applications' : 'Closed Applications' }}</span>
                     </div>
                 </div>
                 <div class="row">
@@ -49,7 +49,7 @@
                 </div>
                 <div class="text-right mt-2">
                     <a href="{{ $guild->viewUrl }}" class="btn btn-outline-primary">Visit Guild</a>
-                    @if ($guild->open_new_users)
+                    @if ($guild->open_new_users && !$guild->is_disbanded)
                         <a href="{{ url()->current() }}/application/{{ $guild->id }}" class="ml-2 btn btn-primary">Submit an Application</a>
                     @endif
                 </div>

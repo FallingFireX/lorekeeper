@@ -15,7 +15,9 @@
             </div>
             <div class="d-flex align-items-center justify-content-between">
                 {!! $character->displayOwner !!}
-                {!! $gc->rank->displayName !!}
+                @if ($gc->rank)
+                    {!! $gc->rank->displayName !!}
+                @endif
             </div>
         </div>
         @if (isset($limit) && $i === $limit - 1)

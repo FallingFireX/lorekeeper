@@ -66,6 +66,17 @@ class AccountController extends Controller {
     }
 
     /**
+     * Shows the user guild invitations page.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getGuildInvitations() {
+        return view('account.guild_invitations', [
+            'invites'   => Auth::user()->guildInvites ?? [],
+        ]);
+    }
+
+    /**
      * Edits the user's profile.
      *
      * @return \Illuminate\Http\RedirectResponse
@@ -175,6 +186,27 @@ class AccountController extends Controller {
     public function postBirthday(Request $request, UserService $service) {
         if ($service->updateBirthdayVisibilitySetting($request->input('birthday_setting'), Auth::user())) {
             flash('Setting updated successfully.')->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Changes the user's email address and sends a verification email.
+     *
+     * @param App\Services\UserService $service
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postGuildInvitations(Request $request, UserService $service) {
+        $allow = $request->only(['allow_guild_invitations']) ? true : false;
+
+        if ($service->updateGuildInvitation($allow, Auth::user())) {
+            flash('Invitation status updated!')->success();
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();

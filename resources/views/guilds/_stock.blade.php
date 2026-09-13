@@ -3,7 +3,7 @@
         <div class="text-right mb-3"><a href="#" class="remove-stock-button btn btn-danger">Remove</a></div>
         <div class="form-group">
             {!! Form::label('item_id[' . $key . ']', 'Item') !!}
-            {!! Form::select('item_id[' . $key . ']', $items, $stock ? $stock->item_id : null, ['class' => 'form-control stock-field selectize', 'data-name' => 'item_id', 'placeholder' => 'Select item...']) !!}
+            {!! Form::select('item_id[' . $key . ']', $items, $stock ? $stock->item_id : null, ['class' => 'form-control stock-field item-select selectize', 'data-name' => 'item_id', 'placeholder' => 'Select item...']) !!}
         </div>
         <div class="form-group">
             <div class="row">
@@ -36,17 +36,20 @@
                 </div>
             </div>
         </div>
-        <div class="card mb-3 stock-limited-quantity {{ $stock && $stock->is_limited_stock ? '' : 'hide' }}">
-            <div class="card-body">
-                <div>
-                    {!! Form::label('quantity[' . $key . ']', 'Quantity') !!} {!! add_help('If left blank, will be set to 0 (sold out).') !!}
-                    {!! Form::text('quantity[' . $key . ']', $stock ? $stock->quantity : 0, ['class' => 'form-control stock-field', 'data-name' => 'quantity']) !!}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group qty-wrapper">
+                    {!! Form::label('quantity[' . $key . ']', 'Quantity') !!} {!! add_help('At minimum, 1 unit will be transferred to the shop. All items will come from the guild inventory.') !!}
+                    {!! Form::number('quantity[' . $key . ']', $stock ? $stock->quantity : 1, ['class' => 'form-control stock-field quantity', 'min' => 1, 'data-name' => 'quantity']) !!}
+                    <small class="{{ $stock ?? 'hide' }}">Currently in Inventory: {{ isset($itemCounts) && isset($itemCounts[$stock->item_id]) ? $itemCounts[$stock->item_id] : 0 }}</small>
                 </div>
             </div>
-        </div>
-        <div>
-            {!! Form::label('purchase_limit[' . $key . ']', 'User Purchase Limit') !!} {!! add_help('This is the maximum amount of this item a user can purchase from this shop. Set to 0 to allow infinite purchases.') !!}
-            {!! Form::text('purchase_limit[' . $key . ']', $stock ? $stock->purchase_limit : 0, ['class' => 'form-control stock-field', 'data-name' => 'purchase_limit']) !!}
+            <div class="col-md-6">
+                <div class="form-group">
+                    {!! Form::label('purchase_limit[' . $key . ']', 'User Purchase Limit') !!} {!! add_help('This is the maximum amount of this item a user can purchase from this shop. Set to 0 to allow infinite purchases.') !!}
+                    {!! Form::text('purchase_limit[' . $key . ']', $stock ? $stock->purchase_limit : 0, ['class' => 'form-control stock-field', 'data-name' => 'purchase_limit']) !!}
+                </div>
+            </div>
         </div>
     </div>
 </div>

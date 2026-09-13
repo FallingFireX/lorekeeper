@@ -20,18 +20,19 @@
     </li>
     <li class="sidebar-section">
         <div class="sidebar-section-header">Members</div>
-        <div class="sidebar-item"><a href="{{ $guild->viewUrl . '/members' }}" class="{{ set_active('*members') }}">Members</a></div>
+        <div class="sidebar-item"><a href="{{ $guild->viewUrl . '/members' }}" class="{{ set_active('*/members') }}">Members</a></div>
         <div class="sidebar-item"><a href="{{ $guild->viewUrl . '/characters' }}" class="{{ set_active('*characters') }}">Characters</a></div>
     </li>
     @if ($guild->owner_id === Auth::user()->id)
         <li class="sidebar-section">
             <div class="sidebar-section-header">Admin</div>
-            <div class="sidebar-item"><a href="{{ $guild->editUrl }}" class="{{ set_active('*edit') }}">Settings</a></div>
+            <div class="sidebar-item"><a href="{{ $guild->editUrl }}" class="{{ set_active('*' . $guild->id . '/edit') }}">Settings</a></div>
             <div class="sidebar-item"><a href="{{ $guild->editRankUrl }}" class="{{ set_active('*edit-ranks') }}">Edit Ranks</a></div>
+            <div class="sidebar-item"><a href="{{ $guild->viewUrl }}/manage-members" class="{{ set_active('*manage-members') }}">Manage Members</a></div>
             @if ($guild->shop)
-                <div class="sidebar-item"><a href="{{ url('guilds/' . $guild->id . '/shop/edit') }}" class="{{ set_active('*shop/edit') }}">Edit Shop</a></div>
+                <div class="sidebar-item"><a href="{{ url(__('guilds.guilds') . '/' . $guild->id . '/shop/edit') }}" class="{{ set_active('*shop/edit') }}">Edit Shop</a></div>
             @else
-                <div class="sidebar-item"><a href="{{ url('guilds/' . $guild->id . '/shop/create') }}" class="{{ set_active('*shop/create') }}">Create Shop</a></div>
+                <div class="sidebar-item"><a href="{{ url(__('guilds.guilds') . '/' . $guild->id . '/shop/create') }}" class="{{ set_active('*shop/create') }}">Create Shop</a></div>
             @endif
         </li>
     @endif
