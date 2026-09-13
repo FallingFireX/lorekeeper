@@ -9,8 +9,10 @@ use App\Models\User\User;
 use Illuminate\Http\Request;
 use Auth;
 use Settings;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GuildController extends Controller {
+    use SoftDeletes;
     /*
     |--------------------------------------------------------------------------
     | Queues Controller
@@ -156,6 +158,51 @@ class GuildController extends Controller {
             flash('Guild created successfully.')->success();
 
             return redirect()->to('admin/guilds/edit/'.$guild->id);
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Shows the delete MYO slot modal.
+     *
+     * @param int $id
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getGuildDelete($id) {
+        $this->guild = Guild::where('id', $id)->first();
+        if (!$this->guild) {
+            abort(404);
+        }
+
+        return view('admin.guilds._delete_guild_modal', [
+            'guild' => $this->guild,
+        ]);
+    }
+
+    /**
+     * Deletes a character.
+     *
+     * @param App\Services\CharacterManager $service
+     * @param string                        $slug
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postGuildDelete(Request $request, GuildManager $service, $id) {
+        $this->guild = Guild::where('id', $id)->first();
+        if (!$this->guild) {
+            abort(404);
+        }
+
+        if ($service->deleteGuild($this->guild, Auth::user())) {
+            flash('Guild deleted successfully.')->success();
+
+            return redirect()->to('masterlist');
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();

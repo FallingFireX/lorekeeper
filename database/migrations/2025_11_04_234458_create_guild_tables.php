@@ -30,6 +30,7 @@ return new class extends Migration {
             $table->boolean('open_armory')->default(0);
             $table->boolean('has_logo')->default(0);
             $table->boolean('has_banner')->default(0);
+            $table->softDeletes();
             $table->timestamps();
         });
 

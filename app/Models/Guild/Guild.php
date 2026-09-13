@@ -9,8 +9,10 @@ use App\Models\Model;
 use App\Models\User\User;
 use Auth;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes; 
 
 class Guild extends Model {
+    use SoftDeletes;
     /**
      * The attributes that are mass assignable.
      *

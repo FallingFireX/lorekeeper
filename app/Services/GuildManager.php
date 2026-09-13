@@ -207,6 +207,44 @@ class GuildManager extends Service {
     }
 
     /**
+     * Deletes a character.
+     *
+     * @param \App\Models\Character\Character $character
+     * @param \App\Models\User\User           $user
+     *
+     * @return bool
+     */
+    public function deleteGuild($guild, $user) {
+        DB::beginTransaction();
+
+        try {
+            if (!$user->isStaff) {
+                throw new \Exception('Only staff may delete the guild.');
+            }
+            if ($guild->members) {
+                //Delete the members rows from the guild_users table here
+            }
+            if ($guild->characters) {
+                //Delete the members rows from the guild_characters table here
+            }
+            //Delete other relational data besides bank/inv
+            if (!$this->logAdminAction($user, 'Deleted Guild', 'Deleted Guild '.$guild->id)) {
+                throw new \Exception('Failed to log admin action.');
+            }
+
+            // Delete guild
+            // This is a soft delete
+            $guild->delete();
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+
+        return $this->rollbackReturn(false);
+    }
+
+    /**
      * ---------------------------------------------------------------------------
      * GUILD MEMBERS & CHARACTERS
      * ---------------------------------------------------------------------------.
