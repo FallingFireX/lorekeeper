@@ -225,8 +225,6 @@ class GuildController extends Controller {
             'user_ranks', 'character_ranks',
         ]);
 
-        \Log::info($data);
-
         if ($id && $service->updateGuildRanks(Guild::find($id), $data, Auth::user())) {
             flash('Guild ranks updated successfully.')->success();
         } elseif (!$id && $category = $service->updateGuildRanks($data, Auth::user())) {
@@ -257,11 +255,20 @@ class GuildController extends Controller {
             abort(404);
         }
 
+        $in_guild = GuildMember::where([
+            ['guild_id', $guild->id],
+            ['user_id', Auth::user()->id],
+        ])->exists();
+
         $categories = ItemCategory::visible(Auth::check() ? Auth::user() : null)->orderBy('sort', 'DESC')->get();
         $query = $shop->displayStock()->where(function ($query) use ($categories) {
             $query->whereIn('item_category_id', $categories->pluck('id')->toArray())
                 ->orWHereNull('item_category_id');
         });
+
+        if ( !$in_guild ) {
+            $query->where('is_guild_only', 0);
+        }
 
         $items = count($categories) ? $query->orderByRaw('FIELD(item_category_id,'.implode(',', $categories->pluck('id')->toArray()).')')
             ->orderBy('name')
@@ -341,31 +348,31 @@ class GuildController extends Controller {
     public function getGuildMembers(Request $request, $id) {
         $guild = Guild::where('id', $id)->first();
 
-        $query = $guild->members();
+        $query = $guild->members()->join('users', 'guild_users.user_id', '=', 'users.id')->select('guild_users.*');
         $sort = $request->only(['sort']);
-        $rank = $request->only(['rank']);
+        $permissions = $request->only(['permissions']);
 
-        // if ($request->get('name')) {
-        //     $query->join('users', 'guild_users.user_id', '=', 'users.id')
-        //         ->where('users.name', 'LIKE', '%'.$request->get('name').'%');
-        // }
+        if ($request->get('name')) {
+            $query->join('users', 'guild_users.user_id', '=', 'users.id')
+                ->where('users.name', 'LIKE', '%'.$request->get('name').'%');
+        }
 
-        // if ($rank !== '') {
-        //     $query->where('rank', $rank);
-        // }
+        if ($permissions !== '') {
+            $query->where('permissions', $permissions);
+        }
 
         switch ($sort['sort'] ?? null) {
             default:
                 $query->orderBy('joined_at', 'ASC');
                 break;
             case 'alpha':
-                $query->orderBy('name');
+                $query->orderBy('users.name');
                 break;
             case 'alpha-reverse':
-                $query->orderBy('name', 'DESC');
+                $query->orderBy('users.name', 'DESC');
                 break;
             case 'reputation':
-                //Do this one later to grab from the user's reputation (more advanced in case reputation is stored for multiple guilds)
+                $query->orderBy('reputation', 'DESC');
                 break;
             case 'newest':
                 $query->orderBy('joined_at', 'DESC');
@@ -492,6 +499,10 @@ class GuildController extends Controller {
     public function getGuildAddMembersModal($id) {
         $guild = Guild::where('id', $id)->first();
 
+        if ( !$guild->getPermission() ) {
+            abort(404);
+        }
+
         $in_guild = $guild->members->pluck('user_id')->toArray();
         $applicable_users = User::visible()->whereNotIn('id', $in_guild)->orderBy('name')->get()->pluck('verified_name', 'id')->toArray();
 
@@ -510,6 +521,10 @@ class GuildController extends Controller {
      */
     public function getGuildAddCharactersModal($id) {
         $guild = Guild::where('id', $id)->first();
+
+        if ( !$guild->getPermission() ) {
+            abort(404);
+        }
 
         $in_guild = $guild->characters->pluck('character_id')->toArray();
         $user_ids = $guild->members->pluck('user_id')->toArray();
@@ -530,6 +545,10 @@ class GuildController extends Controller {
      */
     public function getManageMembers($id) {
         $guild = Guild::where('id', $id)->first();
+
+        if ( !$guild->getPermission() ) {
+            abort(404);
+        }
 
         return view('guilds.manage_members', [
             'guild'                 => $guild,
@@ -709,7 +728,7 @@ class GuildController extends Controller {
         $guild = Guild::where('id', $id)->first();
         $shop = $guild->shop ?? null;
 
-        if (!$guild) {
+        if (!$guild || !$guild->getPermission()) {
             abort(404);
         }
 

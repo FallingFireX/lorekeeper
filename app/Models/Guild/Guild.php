@@ -8,6 +8,7 @@ use App\Models\Item\Item;
 use App\Models\Model;
 use App\Models\User\User;
 use Carbon\Carbon;
+use Auth;
 
 class Guild extends Model {
     /**
@@ -416,5 +417,23 @@ class Guild extends Model {
      */
     public function getInviteRejectAttribute() {
         return url(__('guilds.guilds').'/'.$this->id.'/invite/reject');
+    }
+
+    /**********************************************************************************************
+
+        OTHER FUNCTIONS
+
+    **********************************************************************************************/
+
+    public function getPermission() {
+        if ( Auth::user()->isStaff || Auth::user()->id === $this->owner_id ) return true;
+
+        if ( GuildMember::where([
+            ['user_id', Auth::user()->id],
+            ['guild_id', $this->id],
+            ['permissions', '>', 0]
+        ])->exists() ) return true;
+
+        return false;
     }
 }
