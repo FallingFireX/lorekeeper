@@ -257,7 +257,7 @@ class GuildController extends Controller {
         $categories = ItemCategory::visible(Auth::check() ? Auth::user() : null)->orderBy('sort', 'DESC')->get();
         $query = $shop->displayStock()->where(function ($query) use ($categories) {
             $query->whereIn('item_category_id', $categories->pluck('id')->toArray())
-                ->orWHereNull('item_category_id');
+                ->orWhereNull('item_category_id');
         });
 
         $items = count($categories) ? $query->orderByRaw('FIELD(item_category_id,'.implode(',', $categories->pluck('id')->toArray()).')')

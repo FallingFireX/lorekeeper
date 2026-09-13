@@ -37,7 +37,7 @@ return new class extends Migration {
             $table->engine = 'InnoDB';
             $table->integer('guild_id');
             $table->integer('user_id');
-            $table->integer('permissions')->default(0)->after('user_id');
+            $table->integer('permissions')->default(0);
             $table->string('rank_id');
             $table->integer('reputation')->default(0);
             $table->timestamp('joined_at', precision: 0)->nullable();
@@ -148,7 +148,7 @@ return new class extends Migration {
             $table->integer('currency_id');
             $table->boolean('guild_only')->default(false);
             $table->float('cost')->default(1.0);
-            $table->float('guild_cost')->after('cost')->nullable();
+            $table->float('guild_cost')->nullable();
             $table->text('data')->nullable();
             $table->integer('quantity')->default(1);
             $table->boolean('is_limited_stock')->default(false);

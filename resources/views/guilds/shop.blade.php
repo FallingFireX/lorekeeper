@@ -26,7 +26,7 @@
 
     <!-- <pre style="background:#ccc">
         {{ print_r($categories, true) }}
-    </pre> -->
+    </pre>  -->
 
     @foreach ($items as $categoryId => $categoryItems)
         <?php
