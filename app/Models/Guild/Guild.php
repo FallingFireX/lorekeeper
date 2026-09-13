@@ -7,8 +7,8 @@ use App\Models\Currency\CurrencyLog;
 use App\Models\Item\Item;
 use App\Models\Model;
 use App\Models\User\User;
-use Carbon\Carbon;
 use Auth;
+use Carbon\Carbon;
 
 class Guild extends Model {
     /**
@@ -426,13 +426,17 @@ class Guild extends Model {
     **********************************************************************************************/
 
     public function getPermission() {
-        if ( Auth::user()->isStaff || Auth::user()->id === $this->owner_id ) return true;
+        if (Auth::user()->isStaff || Auth::user()->id === $this->owner_id) {
+            return true;
+        }
 
-        if ( GuildMember::where([
+        if (GuildMember::where([
             ['user_id', Auth::user()->id],
             ['guild_id', $this->id],
-            ['permissions', '>', 0]
-        ])->exists() ) return true;
+            ['permissions', '>', 0],
+        ])->exists()) {
+            return true;
+        }
 
         return false;
     }
